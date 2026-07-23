@@ -58,9 +58,16 @@
     <x-breadcrumb item="Manajemen Siswa" active="Load Siswa" />
 
     <div class="card">
-        <div class="card-header">
-            <h5>Load Siswa ke {{ $kelasTujuan->kelas->nama_kelas }} ({{ $kelasTujuan->tahunAjaran->tahun }}
-                {{ $kelasTujuan->tahunAjaran->semester }})</h5>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h5>Load Siswa ke {{ $kelasTujuan->kelas->nama_kelas }} ({{ $kelasTujuan->tahunAjaran->tahun }}
+                    {{ $kelasTujuan->tahunAjaran->semester }})</h5>
+            </div>
+            <div>
+                <a href="{{ route('akademik.siswa.index', $kelasTujuan->kelas_ajar_id) }}" class="btn btn-secondary">Kembali</a>
+            </div>
+        </div>
+        <div class="card-body">
             @if (session('error'))
                 <div class="alert alert-danger mt-4">{{ session('error') }}</div>
             @endif
@@ -69,8 +76,6 @@
                     {{ $message }}
                 </div>
             @enderror
-        </div>
-        <div class="card-body">
             <form method="GET" action="">
                 <div class="mb-3">
                     <label for="kelas_asal_id" class="form-label">Pilih Kelas Asal</label>

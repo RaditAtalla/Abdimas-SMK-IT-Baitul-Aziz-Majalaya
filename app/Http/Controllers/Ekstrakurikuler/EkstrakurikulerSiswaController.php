@@ -167,7 +167,6 @@ class EkstrakurikulerSiswaController extends Controller
 
         $siswaQuery = Siswa::query()
             ->whereHas('user')
-            ->whereHas('riwayatKelas') // hanya siswa yang sudah pernah masuk kelas
             ->where(function ($query) use ($q) {
                 $query->where('nama', 'like', "%$q%")
                     ->orWhere('nis', 'like', "%$q%")

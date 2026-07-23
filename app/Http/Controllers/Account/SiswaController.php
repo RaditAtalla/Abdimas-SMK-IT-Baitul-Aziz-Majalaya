@@ -370,13 +370,8 @@ class SiswaController extends Controller
         $q = $request->input('q');
         $tahunAjaranId = $kelas_ajar->tahun_ajaran_id;
 
-        // Cari siswa yang pernah punya riwayat kelas di tahun ajaran sebelumnya, tapi belum ada di kelas_ajar ini
+        // Cari siswa yang belum ada di kelas_ajar ini
         $siswaQuery = Siswa::query()
-            ->whereHas('riwayatKelas', function ($q1) use ($tahunAjaranId) {
-                $q1->whereHas('kelasAjar', function ($q2) use ($tahunAjaranId) {
-                    $q2->where('tahun_ajaran_id', '<', $tahunAjaranId);
-                });
-            })
             ->whereDoesntHave('riwayatKelas', function ($q3) use ($kelas_ajar) {
                 $q3->where('kelas_ajar_id', $kelas_ajar->kelas_ajar_id);
             })

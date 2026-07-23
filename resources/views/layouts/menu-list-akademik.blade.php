@@ -28,9 +28,23 @@
         <span class="pc-mtext">Staff</span></a>
 </li>
 <li class="pc-item pc-hasmenu">
+    <a href="{{ route('akademik.master-siswa.index') }}" class="pc-link">
+        <span class="pc-micon">
+            <i class="bi bi-person-badge"></i>
+        </span>
+        <span class="pc-mtext">Siswa</span></a>
+</li>
+<li class="pc-item pc-hasmenu">
+    <a href="{{ route('akademik.master-orang-tua.index') }}" class="pc-link">
+        <span class="pc-micon">
+            <i class="bi bi-person-lines-fill"></i>
+        </span>
+        <span class="pc-mtext">Orang Tua</span></a>
+</li>
+<li class="pc-item pc-hasmenu">
     <a href="{{ route('akademik.akun.index') }}" class="pc-link">
         <span class="pc-micon">
-            <i class="bi bi-people"></i>
+            <i class="bi bi-person-check"></i>
         </span>
         <span class="pc-mtext">Account activate</span></a>
 </li>

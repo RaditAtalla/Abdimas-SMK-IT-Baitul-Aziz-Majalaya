@@ -115,11 +115,12 @@
 
     @hasSection('scripts')
         @yield('scripts')
-    @else
-        <script>
-            localStorage.setItem('layout', 'tab');
-        </script>
     @endif
+    <script>
+        if (localStorage.getItem('layout') === 'tab') {
+            localStorage.removeItem('layout');
+        }
+    </script>
 </body>
 <!-- [Body] end -->
 </html>

@@ -4,6 +4,8 @@ use App\Http\Controllers\Absensi\AbsensiControllerEkstrakurikuler;
 use App\Http\Controllers\Absensi\AbsensiControllerIntrakurikuler;
 use App\Http\Controllers\Account\AccountController;
 use App\Http\Controllers\Akademik\KelasController;
+use App\Http\Controllers\Akademik\MasterOrangTuaController;
+use App\Http\Controllers\Akademik\MasterSiswaController;
 use App\Http\Controllers\Akademik\StaffController;
 use App\Http\Controllers\Akademik\TahunAjaranController;
 use App\Http\Controllers\Intrakurikuler\AssesmentFormatifController;
@@ -90,6 +92,9 @@ Route::middleware(['auth', 'role:Bagian Akademik'])->prefix('akademik')->name('a
 
     Route::get('kelas/ajax/kelas/search', [SiswaController::class, 'ajaxSearchKelas'])->name('ajax.kelas.search');
     Route::resource('staff', StaffController::class);
+    
+    Route::resource('master-siswa', MasterSiswaController::class)->parameters(['master-siswa' => 'siswa']);
+    Route::resource('master-orang-tua', MasterOrangTuaController::class)->parameters(['master-orang-tua' => 'orangTua'])->except(['create', 'store']);
 });
 
 // Define a group of routes with 'auth' middleware applied

@@ -74,12 +74,9 @@
                             class="btn btn-info">
                             Load Siswa dari Kelas Lain
                         </a>
-                        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#modalAddExistingSiswa">
-                            Tambah Siswa dari Tahun Ajaran Sebelumnya
-                        </button>
-                        <a href="{{ route('akademik.siswa.create', $kelas_ajar->kelas_ajar_id) }}" class="btn btn-primary">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAddExistingSiswa">
                             <i class="bi bi-plus-lg"></i> Tambah Siswa
-                        </a>
+                        </button>
                     </div>
                 </div>
 
@@ -155,23 +152,26 @@
     <!-- Modal -->
     <div class="modal fade" id="modalAddExistingSiswa" tabindex="-1" aria-labelledby="modalAddExistingSiswaLabel"
         aria-hidden="true">
-        <div class="modal-dialog">
-            <form method="POST" action="{{ route('akademik.kelas.add-existing-siswa', $kelas_ajar->kelas_ajar_id) }}">
-                @csrf
-                <div class="modal-content">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('akademik.kelas.add-existing-siswa', $kelas_ajar->kelas_ajar_id) }}">
+                    @csrf
                     <div class="modal-header">
                         <h5 class="modal-title" id="modalAddExistingSiswaLabel">Pilih Siswa</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
                     <div class="modal-body">
-                        <label for="existing_siswa_id">Cari Siswa</label>
-                        <select id="existing_siswa_id" name="siswa_id" class="form-control" required></select>
+                        <div class="mb-3">
+                            <label for="existing_siswa_id" class="form-label">Cari Siswa</label>
+                            <select id="existing_siswa_id" name="siswa_id" class="form-select" style="width:100%" required></select>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">Tambah</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Tambahkan</button>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 @endsection

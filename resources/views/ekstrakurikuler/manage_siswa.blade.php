@@ -66,12 +66,8 @@
                     Load Siswa dari Kelas Lain
                 </a>
                 <button type="button" class="btn btn-primary mb-3 ms-2" data-bs-toggle="modal" data-bs-target="#modalLoadSiswa">
-                    Tambah Siswa Satuan
+                    <i class="bi bi-plus-lg"></i> Tambah Siswa
                 </button>
-                <a href="{{ route('ekstrakurikuler.manage-siswa.create', $ekskul->ekstrakurikuler_id) }}"
-                    class="btn btn-success mb-3 ms-2">
-                    Tambah Siswa Baru
-                </a>
             </div>
         </div>
         <div class="card-body">
