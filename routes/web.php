@@ -135,6 +135,11 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/assesmen-sumatif/import', [AssesmentSumatifController::class, 'importExcelSumatif'])
                 ->name('assesment_sumatif.import');
 
+            Route::get('template-tp-lm-excel', [ExcelController::class, 'downloadInputTpLmTemplate'])
+                ->name('template_tp_lm.template');
+            Route::post('import-tp-lm', [ExcelController::class, 'importInputTpLm'])
+                ->name('template_tp_lm.import');
+
             Route::get('assesment-formatif/{riwayatKelas}/detail', [AssesmentFormatifController::class, 'detailAssesmentFormatif'])
                 ->name('assesment-formatif.detail');
             Route::post('assesment-formatif/{riwayatKelas}/save-detail', [AssesmentFormatifController::class, 'saveDetail'])
