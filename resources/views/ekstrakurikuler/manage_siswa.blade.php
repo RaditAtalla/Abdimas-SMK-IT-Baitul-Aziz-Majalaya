@@ -61,8 +61,12 @@
             <h5>Kelola Siswa Ekstrakurikuler: {{ $ekskul->nama_pelajaran }} ({{ $ekskul->tahunAjaran->tahun }}
                 {{ $ekskul->tahunAjaran->semester }})</h5>
             <div>
-                <button type="button" class="btn btn-info mb-3" data-bs-toggle="modal" data-bs-target="#modalLoadSiswa">
-                    Load Siswa
+                <a href="{{ route('ekstrakurikuler.manage-siswa.show-load-siswa', $ekskul->ekstrakurikuler_id) }}"
+                    class="btn btn-info mb-3">
+                    Load Siswa dari Kelas Lain
+                </a>
+                <button type="button" class="btn btn-primary mb-3 ms-2" data-bs-toggle="modal" data-bs-target="#modalLoadSiswa">
+                    Tambah Siswa Satuan
                 </button>
                 <a href="{{ route('ekstrakurikuler.manage-siswa.create', $ekskul->ekstrakurikuler_id) }}"
                     class="btn btn-success mb-3 ms-2">

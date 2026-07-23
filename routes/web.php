@@ -151,12 +151,20 @@ Route::middleware(['auth'])->group(function () {
             ->name('ekstrakurikuler.manage-siswa.store');
         Route::post('manage-siswa/add-existing', [EkstrakurikulerSiswaController::class, 'addExistingSiswa'])
             ->name('ekstrakurikuler.manage-siswa.add-existing');
+
+        Route::get('manage-siswa/load-siswa', [EkstrakurikulerSiswaController::class, 'showLoadSiswaForm'])
+            ->name('ekstrakurikuler.manage-siswa.show-load-siswa');
+        Route::post('manage-siswa/load-siswa', [EkstrakurikulerSiswaController::class, 'loadSiswaFromKelas'])
+            ->name('ekstrakurikuler.manage-siswa.load-siswa');
+
         Route::resource('manage-siswa', EkstrakurikulerSiswaController::class)
             ->only(['index', 'destroy'])
             ->names('ekstrakurikuler.manage-siswa');
 
         Route::get('ajax/search-siswa', [EkstrakurikulerSiswaController::class, 'ajaxSearchSiswa'])
             ->name('ekstrakurikuler.ajax.search-siswa');
+        Route::get('ajax/kelas/search', [EkstrakurikulerSiswaController::class, 'ajaxSearchKelas'])
+            ->name('ekstrakurikuler.ajax.kelas.search');
 
         Route::resource('penilaian_ekstrakurikuler', PenilaianEkstrakurikulerController::class);
     })->middleware('role:Guru Mapel|Bagian Akademik');
