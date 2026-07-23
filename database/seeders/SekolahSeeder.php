@@ -48,7 +48,7 @@ class SekolahSeeder extends Seeder
                 'kelurahan_id' => '32.04.33.2010',
                 'website' => 'www.smkitbaitulaziz.sch.id',
                 'email' => 'smkitbaitulaziz@gmail.com',
-                'nama_kepala_sekolah' => $staffKepalaSekolah->nama,
+                'staff_id' => $staffKepalaSekolah->staff_id,
             ]
         );
     }
