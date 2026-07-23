@@ -56,7 +56,7 @@ class EkstrakurikulerExcelController extends Controller
 
         // Format Header Table
         $sheet->getStyle('A4:E4')->getFont()->setBold(true);
-        $sheet->getStyle('A4:E4')->getFill() - Fill::FILL_SOLID;
+        $sheet->getStyle('A4:E4')->getFill()->setFillType(Fill::FILL_SOLID);
         $sheet->getStyle('A4:E4')->getFill()->getStartColor()->setARGB('FFD9E1F2');
         $sheet->getStyle('A4:E4')->getAlignment()
             ->setHorizontal(Alignment::HORIZONTAL_CENTER)
