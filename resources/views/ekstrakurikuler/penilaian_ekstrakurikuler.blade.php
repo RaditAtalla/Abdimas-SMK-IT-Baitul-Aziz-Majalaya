@@ -130,6 +130,8 @@
                 </form>
             </div>
         </div>
+    </div>
+
     <!-- Modal Import Excel Penilaian -->
     <div class="modal fade" id="importExcelModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
