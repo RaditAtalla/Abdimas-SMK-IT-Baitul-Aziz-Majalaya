@@ -88,6 +88,9 @@
                     @if (session('warning'))
                         <div class="alert alert-warning">{{ session('warning') }}</div>
                     @endif
+                    @if (session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
 
                     <div class="table-responsive">
                         <table class="table" id="pc-dt-simple">
@@ -107,6 +110,7 @@
                                     @endrole
                                     <th>Lingkup materi</th>
                                     <th>Tujuan pembelajaran</th>
+                                    <th>Import excel</th>
                                 </tr>
                             </thead>
 
@@ -161,6 +165,26 @@
                                                 class="btn btn-sm btn-light-primary mb-1">Tujuan pembelajaran</a>
                                             <a href="{{ route('assesment-formatif.index', $item->intrakurikuler_id) }}"
                                                 class="btn btn-sm btn-light-primary mb-1">Asesmen Formatif</a>
+                                        </td>
+                                        {{-- new feature --}}
+                                        <td class="d-flex align-items-center gap-2">
+                                            <a href="{{ route('template_tp_lm.template', $item->intrakurikuler_id) }}" class="btn btn-primary">
+                                                <i class="bi bi-download"></i> Unduh Template Excel
+                                            </a>
+
+                                            <form action="{{ route('template_tp_lm.import', $item->intrakurikuler_id) }}"
+                                                method="POST" enctype="multipart/form-data"
+                                                class="d-flex align-items-center gap-2">
+                                                @csrf
+                                                <label class="btn btn-outline-secondary mb-0">
+                                                    <i class="bi bi-upload"></i> Pilih File Excel
+                                                    <input type="file" name="excel" accept=".xlsx,.xls" class="d-none" required
+                                                        onchange="this.form.querySelector('button[type=submit]').disabled = !this.value;">
+                                                </label>
+                                                <button type="submit" class="btn btn-success" disabled>
+                                                    <i class="bi bi-save"></i> Simpan Data Excel
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @empty

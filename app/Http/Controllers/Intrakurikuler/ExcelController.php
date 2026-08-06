@@ -7,10 +7,13 @@ use App\Models\AsesmenSumatif;
 use App\Models\Intrakurikuler;
 use App\Models\LingkupMateri;
 use App\Models\SkorAsesmenSiswa;
+use App\Models\TujuanPembelajaran;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -518,5 +521,119 @@ class ExcelController extends Controller
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Cache-Control' => 'max-age=0',
         ]);
+    }
+
+    public function downloadInputTpLmTemplate(Request $request, $intrakurikuler_id)
+    {
+        $intrakurikuler = Intrakurikuler::with([
+            'kelasAjar.kelas',
+            'kelasAjar.tahunAjaran',
+        ])->findOrFail($intrakurikuler_id);
+
+        // ===========================
+        // EXCEL
+        // ===========================
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->getDefaultStyle()->getFont()->setName('Calibri')->setSize(11);
+
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Template TP dan LM');
+
+        // ===== HEADER (Baris 1) =====
+        $sheet->setCellValue('A1', 'Lingkup Materi');
+        $sheet->setCellValue('B1', 'Tujuan Pembelajaran');
+
+        $sheet->getRowDimension(1)->setRowHeight(25);
+        $sheet->getStyle('A1:B1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:B1')->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A1:B1')->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFEFEFEF');
+
+        // Column widths
+        $sheet->getColumnDimension('A')->setWidth(35);
+        $sheet->getColumnDimension('B')->setWidth(55);
+
+        // Filename
+        $namaKelas = $intrakurikuler->kelasAjar?->kelas?->nama_kelas ?? '';
+        $tahunAjar = $intrakurikuler->kelasAjar?->tahunAjaran?->tahun ?? '';
+        $semester  = $intrakurikuler->kelasAjar?->tahunAjaran?->semester ?? '';
+
+        $base = "template_tp_lm_{$intrakurikuler->nama_pelajaran}_{$namaKelas}_{$tahunAjar}_{$semester}";
+        $base = preg_replace('/[\/\\\\\?\%\*\:\|\"<>\r\n]+/', '_', $base);
+        $base = trim($base, " ._");
+        $filename = $base . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    public function importInputTpLm(Request $request, $intrakurikuler_id)
+    {
+        $request->validate([
+            'excel' => 'required|file|mimes:xlsx,xls',
+        ]);
+
+        $intrakurikuler = Intrakurikuler::findOrFail($intrakurikuler_id);
+
+        $user = auth()->user();
+        if (!$user->hasRole('Bagian Akademik') && !$user->hasRole('Super Admin') && $intrakurikuler->pengampu_user_id != $user->id) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengimport data pada intrakurikuler ini.');
+        }
+
+        $file = $request->file('excel');
+
+        try {
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $sheet = $spreadsheet->getActiveSheet();
+            $highestRow = $sheet->getHighestRow();
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Gagal membaca file Excel. Pastikan format file benar.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $lmCount = 0;
+            $tpCount = 0;
+
+            for ($row = 2; $row <= $highestRow; $row++) {
+                $namaMateri = trim((string) $sheet->getCell("A{$row}")->getValue());
+                $deskripsi  = trim((string) $sheet->getCell("B{$row}")->getValue());
+
+                if ($namaMateri !== '') {
+                    $lm = LingkupMateri::firstOrCreate([
+                        'intrakurikuler_id' => $intrakurikuler_id,
+                        'nama_materi' => $namaMateri,
+                    ]);
+                    if ($lm->wasRecentlyCreated) {
+                        $lmCount++;
+                    }
+                }
+
+                if ($deskripsi !== '') {
+                    $tp = TujuanPembelajaran::firstOrCreate([
+                        'intrakurikuler_id' => $intrakurikuler_id,
+                        'deskripsi' => $deskripsi,
+                    ]);
+                    if ($tp->wasRecentlyCreated) {
+                        $tpCount++;
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', "Data Excel berhasil diimport ($lmCount Lingkup Materi baru, $tpCount Tujuan Pembelajaran baru).");
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal mengimport data Excel: ' . $th->getMessage());
+        }
     }
 }
