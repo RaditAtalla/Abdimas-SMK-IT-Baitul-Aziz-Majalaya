@@ -15,9 +15,19 @@
         <!-- [ basic-table ] start -->
         <div class="col-xl-12">
             <div class="card">
-                <div class="card-header">
-                    <h5>{{ $ekskul->nama_pelajaran }}</h5>
-                    <span class="d-block m-t-5">{{ $ekskul->tahunAjaran->tahun }} {{ $ekskul->tahunAjaran->semester }}</span>
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h5>{{ $ekskul->nama_pelajaran }}</h5>
+                        <span class="d-block m-t-5">{{ $ekskul->tahunAjaran->tahun }} {{ $ekskul->tahunAjaran->semester }}</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('ekstrakurikuler.penilaian.template-excel', $ekskul->ekstrakurikuler_id) }}" class="btn btn-light-success btn-sm">
+                            <i class="ti ti-file-download me-1"></i> Download Template Excel
+                        </a>
+                        <button type="button" class="btn btn-light-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importExcelModal">
+                            <i class="ti ti-file-upload me-1"></i> Import Excel Penilaian
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body table-border-style">
                     @if (session('success'))
@@ -116,6 +126,34 @@
                         <button type="submit" class="btn btn-primary" id="btnSimpan">
                             Simpan
                         </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Import Excel Penilaian -->
+    <div class="modal fade" id="importExcelModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ route('ekstrakurikuler.penilaian.import-excel', $ekskul->ekstrakurikuler_id) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">Import Excel Penilaian Ekstrakurikuler</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Pilih File Excel (.xlsx / .xls)</label>
+                            <input type="file" class="form-control" name="file_excel" accept=".xlsx, .xls" required>
+                            <div class="form-text text-muted">
+                                Gunakan template Excel yang telah diunduh dari tombol "Download Template Excel".
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Import</button>
                     </div>
                 </form>
             </div>

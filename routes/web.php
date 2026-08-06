@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Dokumen\CetakDokumenController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Ekstrakurikuler\EkstrakurikulerController;
+use App\Http\Controllers\Ekstrakurikuler\EkstrakurikulerExcelController;
 use App\Http\Controllers\Ekstrakurikuler\EkstrakurikulerSiswaController;
 use App\Http\Controllers\Intrakurikuler\IntrakurikulerController;
 use App\Http\Controllers\Ekstrakurikuler\PenilaianEkstrakurikulerController;
@@ -172,6 +173,11 @@ Route::middleware(['auth'])->group(function () {
             ->name('ekstrakurikuler.ajax.kelas.search');
 
         Route::resource('penilaian_ekstrakurikuler', PenilaianEkstrakurikulerController::class);
+
+        Route::get('penilaian-template-excel', [EkstrakurikulerExcelController::class, 'downloadTemplate'])
+            ->name('ekstrakurikuler.penilaian.template-excel');
+        Route::post('penilaian-import-excel', [EkstrakurikulerExcelController::class, 'importExcel'])
+            ->name('ekstrakurikuler.penilaian.import-excel');
     })->middleware('role:Guru Mapel|Bagian Akademik');
 
 
