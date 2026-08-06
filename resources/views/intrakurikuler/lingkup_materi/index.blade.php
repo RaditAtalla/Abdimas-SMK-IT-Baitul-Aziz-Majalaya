@@ -10,7 +10,7 @@
 
 @section('content')
 
-<x-breadcrumb item="Intrakurikuler" active="Lingkup Materi" />
+<x-breadcrumb item="Intrakurikuler" subItem="Intrakurikuler" subLink="{{ route('intrakurikuler.index') }}" active="Lingkup Materi" />
 
 <div class="row">
   <div class="col-xl-12">

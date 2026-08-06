@@ -8,7 +8,7 @@
 
 @section('content')
 
-    <x-breadcrumb item="Intrakurikuler" active="Tujuan Pembelajaran" />
+    <x-breadcrumb item="Intrakurikuler" subItem="Intrakurikuler" subLink="{{ route('intrakurikuler.index') }}" active="Tujuan Pembelajaran" />
 
     <div class="row">
         <!-- [ basic-table ] start -->

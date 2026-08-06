@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Intrakurikuler" active="Tambah Intrakurikuler" />
+    <x-breadcrumb item="Intrakurikuler" subItem="Intrakurikuler" subLink="{{ route('intrakurikuler.index') }}" active="Tambah Intrakurikuler" />
 
     <div class="container">
         <div class="col-md-12">

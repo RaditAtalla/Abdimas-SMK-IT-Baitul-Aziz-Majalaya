@@ -8,7 +8,7 @@
 
 @section('content')
 
-    <x-breadcrumb item="Intrakurikuler" active="Detail Asesmen Formatif" />
+    <x-breadcrumb item="Intrakurikuler" subItem="Intrakurikuler" subLink="{{ route('intrakurikuler.index') }}" sub2Item="Asesmen Formatif" sub2Link="{{ route('assesment-formatif.index', $intrakurikuler->intrakurikuler_id) }}" active="Detail Asesmen Formatif" />
 
     <div class="row">
         <div class="col-md-12">

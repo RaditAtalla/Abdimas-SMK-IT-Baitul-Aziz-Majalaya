@@ -8,7 +8,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Absensi" active="Rekap Absensi (Intrakurikuler)" />
+    <x-breadcrumb item="Absensi Intrakurikuler" link="{{ route('absensi.intrakurikuler.list') }}" active="Rekap Absensi" />
 
     <div class="row">
         <div class="col-12">

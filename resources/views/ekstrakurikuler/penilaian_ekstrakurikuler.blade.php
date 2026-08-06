@@ -8,7 +8,7 @@
 
 @section('content')
 
-    <x-breadcrumb item="Ekstrakurikuler" active="Penilaian Ekstrakurikuler" />
+    <x-breadcrumb item="Ekstrakurikuler" link="{{ route('ekstrakurikuler.index') }}" active="Penilaian Ekstrakurikuler" />
 
     <!-- [ Main Content ] start -->
     <div class="row">

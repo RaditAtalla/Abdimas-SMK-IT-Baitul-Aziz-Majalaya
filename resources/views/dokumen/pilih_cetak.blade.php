@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Dokumen" active="Pilih Cetak" />
+    <x-breadcrumb item="Dokumen" link="{{ route('dokumen.kelas') }}" active="Pilih Cetak" />
 
     <div class="card">
         <div class="card-body">

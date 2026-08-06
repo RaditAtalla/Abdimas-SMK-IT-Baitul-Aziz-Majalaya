@@ -26,7 +26,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Manajemen Account" active="Edit Orang Tua" />
+    <x-breadcrumb item="Manajemen Account" active="Edit Orang Tua" subItem="Data Orang Tua" subLink="{{ route('akademik.master-orang-tua.index') }}" />
 
     <div class="row">
         <div class="col-12">

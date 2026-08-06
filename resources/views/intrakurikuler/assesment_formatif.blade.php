@@ -8,7 +8,7 @@
 
 @section('content')
 
-    <x-breadcrumb item="Intrakurikuler" active="Asesmen Formatif" />
+    <x-breadcrumb item="Intrakurikuler" subItem="Intrakurikuler" subLink="{{ route('intrakurikuler.index') }}" active="Asesmen Formatif" />
 
     <div class="row">
         <!-- [ basic-table ] start -->

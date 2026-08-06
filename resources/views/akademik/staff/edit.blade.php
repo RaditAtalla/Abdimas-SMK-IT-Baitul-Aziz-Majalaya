@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Edit Staff" active="Edit Staff" />
+    <x-breadcrumb item="Manajemen Staff" link="{{ route('akademik.staff.index') }}" active="Edit Staff" />
 
     <div class="container">
         <div class="col-md-12">

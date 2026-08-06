@@ -54,7 +54,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Manajemen Siswa" active="Tambah Siswa" />
+    <x-breadcrumb item="Manajemen Siswa" active="Tambah Siswa" subItem="Data Siswa" subLink="{{ route('akademik.master-siswa.index') }}" />
 
     <div class="row">
         <div class="col-12">

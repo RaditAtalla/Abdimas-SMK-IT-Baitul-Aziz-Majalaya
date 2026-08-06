@@ -54,7 +54,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Ekstrakurikuler" link="{{ route('ekstrakurikuler.index') }}" active="Tambah Siswa" />
+    <x-breadcrumb item="Ekstrakurikuler" subItem="Ekstrakurikuler" subLink="{{ route('ekstrakurikuler.index') }}" sub2Item="Manage Siswa" sub2Link="{{ route('ekstrakurikuler.manage-siswa.index', $ekskul->ekstrakurikuler_id) }}" active="Tambah Siswa" />
 
     <div class="row">
         <div class="col-12">

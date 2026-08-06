@@ -54,7 +54,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Ekstrakurikuler" link="{{ route('ekstrakurikuler.index') }}" active="Manage Siswa" />
+    <x-breadcrumb item="Ekstrakurikuler" subItem="Ekstrakurikuler" subLink="{{ route('ekstrakurikuler.index') }}" active="Manage Siswa" />
 
     <div class="card">
         <div class="card-header d-flex justify-content-between">

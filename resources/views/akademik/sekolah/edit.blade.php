@@ -47,7 +47,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Sekolah" active="Edit Profil Sekolah" />
+    <x-breadcrumb item="Sekolah" link="{{ route('akademik.sekolah.index') }}" active="Edit Profil Sekolah" />
 
     <div class="row">
         <div class="col-xl-12">
