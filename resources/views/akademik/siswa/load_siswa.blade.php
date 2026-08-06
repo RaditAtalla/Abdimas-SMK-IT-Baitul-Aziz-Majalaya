@@ -80,13 +80,13 @@
                 <div class="form-check mb-2">
                     <input class="form-check-input check-filter" type="checkbox" id="showOtherSemester" name="show_other_semester" value="true" {{ request('show_other_semester') == 'true' ? 'checked' : '' }}>
                     <label class="form-check-label" for="showOtherSemester">
-                        Tampilkan kelas dari semester lain
+                        Tampilkan kelas dari semua semester
                     </label>
                 </div>
                 <div class="form-check mb-3">
                     <input class="form-check-input check-filter" type="checkbox" id="showOtherTahun" name="show_other_tahun" value="true" {{ request('show_other_tahun') == 'true' ? 'checked' : '' }}>
                     <label class="form-check-label" for="showOtherTahun">
-                        Tampilkan kelas dari tahun ajaran sebelumnya
+                        Tampilkan kelas dari semua tahun ajaran
                     </label>
                 </div>
                 <div class="mb-3">

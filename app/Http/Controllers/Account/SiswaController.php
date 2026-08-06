@@ -482,7 +482,7 @@ class SiswaController extends Controller
         $showOtherTahun = $request->input('show_other_tahun') === 'true';
         $kelasAjarId = $request->input('kelas_ajar_id');
 
-        $query = KelasAjar::with(['kelas', 'tahunAjaran']);
+        $query = KelasAjar::with(['kelas', 'tahunAjaran'])->withCount('riwayatKelas');
 
         if ($kelasAjarId) {
             $kelasTujuan = KelasAjar::with('tahunAjaran')->find($kelasAjarId);
@@ -490,15 +490,27 @@ class SiswaController extends Controller
                 $tahun = $kelasTujuan->tahunAjaran->tahun;
                 $semester = $kelasTujuan->tahunAjaran->semester;
 
+                // Target default untuk load siswa (mengambil dari kelas sebelumnya)
+                $targetTahun = $tahun;
+                $targetSemester = $semester === 'Ganjil' ? 'Genap' : 'Ganjil';
+                
+                if ($semester === 'Ganjil') {
+                    // Jika saat ini ganjil, maka default-nya adalah genap tahun sebelumnya
+                    $parts = explode('/', $tahun);
+                    if (count($parts) == 2) {
+                        $targetTahun = ((int)$parts[0] - 1) . '/' . ((int)$parts[1] - 1);
+                    }
+                }
+
                 if (!$showOtherTahun) {
-                    $query->whereHas('tahunAjaran', function($q2) use ($tahun) {
-                        $q2->where('tahun', $tahun);
+                    $query->whereHas('tahunAjaran', function($q2) use ($targetTahun) {
+                        $q2->where('tahun', $targetTahun);
                     });
                 }
                 
                 if (!$showOtherSemester) {
-                    $query->whereHas('tahunAjaran', function($q2) use ($semester) {
-                        $q2->where('semester', $semester);
+                    $query->whereHas('tahunAjaran', function($q2) use ($targetSemester) {
+                        $q2->where('semester', $targetSemester);
                     });
                 }
             }
@@ -519,7 +531,7 @@ class SiswaController extends Controller
         $results = $kelasAjar->map(function ($ka) {
             return [
                 'id' => $ka->kelas_ajar_id,
-                'text' => "{$ka->kelas->nama_kelas} - {$ka->tahunAjaran->tahun} {$ka->tahunAjaran->semester}"
+                'text' => "{$ka->kelas->nama_kelas} - {$ka->tahunAjaran->tahun} {$ka->tahunAjaran->semester} ({$ka->riwayat_kelas_count} Siswa)"
             ];
         });
 

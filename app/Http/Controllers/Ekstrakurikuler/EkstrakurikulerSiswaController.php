@@ -298,7 +298,7 @@ class EkstrakurikulerSiswaController extends Controller
         $tahun = $ekskul->tahunAjaran->tahun;
         $semester = $ekskul->tahunAjaran->semester;
 
-        $kelasAjar = KelasAjar::with(['kelas', 'tahunAjaran'])
+        $kelasAjar = KelasAjar::with(['kelas', 'tahunAjaran'])->withCount('riwayatKelas')
             ->when(!$showOtherTahun, function($query) use ($tahun) {
                 $query->whereHas('tahunAjaran', function($q2) use ($tahun) {
                     $q2->where('tahun', $tahun);
@@ -324,7 +324,7 @@ class EkstrakurikulerSiswaController extends Controller
         $results = $kelasAjar->map(function ($ka) {
             return [
                 'id' => $ka->kelas_ajar_id,
-                'text' => "{$ka->kelas->nama_kelas} - {$ka->tahunAjaran->tahun} {$ka->tahunAjaran->semester}"
+                'text' => "{$ka->kelas->nama_kelas} - {$ka->tahunAjaran->tahun} {$ka->tahunAjaran->semester} ({$ka->riwayat_kelas_count} Siswa)"
             ];
         });
 
