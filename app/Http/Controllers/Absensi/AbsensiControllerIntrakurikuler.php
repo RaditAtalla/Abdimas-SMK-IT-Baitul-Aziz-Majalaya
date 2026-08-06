@@ -106,6 +106,65 @@ class AbsensiControllerIntrakurikuler extends Controller
 
     public function storeHarian(Request $request, Intrakurikuler $intrakurikuler)
     {
+        // Batch saving support
+        if ($request->has('attendances') && is_array($request->input('attendances'))) {
+            $data = $request->validate([
+                'tanggal' => ['required', 'date', 'before_or_equal:today'],
+                'attendances' => ['required', 'array'],
+                'attendances.*.riwayat_kelas_id' => ['required', 'integer'],
+                'attendances.*.status' => ['required', Rule::in(['hadir', 'alpha', 'sakit', 'izin'])],
+                'attendances.*.note' => ['nullable', 'string'],
+            ]);
+
+            foreach ($data['attendances'] as $att) {
+                if (in_array($att['status'], ['izin', 'sakit'], true) && blank($att['note'] ?? null)) {
+                    return back()->with('warning', 'Keterangan wajib diisi untuk status Izin / Sakit. Mohon periksa kembali inputan Anda.');
+                }
+            }
+
+            $validRkIds = RiwayatKelas::query()
+                ->where('kelas_ajar_id', $intrakurikuler->kelas_ajar_id)
+                ->pluck('riwayat_kelas_id')
+                ->toArray();
+
+            $dateFormatted = Carbon::parse($data['tanggal'])->format('Y-m-d');
+
+            DB::beginTransaction();
+            try {
+                $savedCount = 0;
+                foreach ($data['attendances'] as $att) {
+                    if (!in_array($att['riwayat_kelas_id'], $validRkIds)) {
+                        continue;
+                    }
+
+                    $where = [
+                        'intrakurikuler_id' => $intrakurikuler->intrakurikuler_id,
+                        'riwayat_kelas_id'  => $att['riwayat_kelas_id'],
+                        'tanggal'           => $dateFormatted,
+                    ];
+
+                    $values = [
+                        'status' => $att['status'],
+                        'note'   => $att['note'] ?? null,
+                        'updated_by' => Auth::id(),
+                    ];
+
+                    KehadiranIntrakurikuler::query()->updateOrCreate(
+                        $where,
+                        $values + ['created_by' => Auth::id()]
+                    );
+                    $savedCount++;
+                }
+
+                DB::commit();
+                return back()->with('success', "Absensi tersimpan ($savedCount siswa).");
+            } catch (\Throwable $th) {
+                DB::rollBack();
+                return back()->with('error', 'Gagal menyimpan absensi: ' . $th->getMessage());
+            }
+        }
+
+        // Single fallback
         $data = $request->validate([
             'tanggal' => ['required', 'date', 'before_or_equal:today'],
             'riwayat_kelas_id' => ['required', 'integer'],
