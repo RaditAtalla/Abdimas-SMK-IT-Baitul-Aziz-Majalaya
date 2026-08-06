@@ -4,7 +4,7 @@
     <div class="row align-items-center">
       <div class="col-md-12">
         <ul class="breadcrumb">
-          <li class="breadcrumb-item"><a href="/dashboard/index">Home</a></li>
+          <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
           <li class="breadcrumb-item"><a href="{{ $link ?? 'javascript: void(0)' }}">{{ $item }}</a></li>
           
           @if(isset($subItem))
