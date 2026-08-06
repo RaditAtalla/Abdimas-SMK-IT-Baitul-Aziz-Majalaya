@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Manajemen User')
 
@@ -8,7 +8,7 @@
 
 @section('content')
 
-    <x-breadcrumb item="Superadmin" active="Manajemen User" />
+    <x-breadcrumb item="Superadmin" active="Manajemen Pengguna" />
 
     <div class="row">
         <div class="col-xl-12">

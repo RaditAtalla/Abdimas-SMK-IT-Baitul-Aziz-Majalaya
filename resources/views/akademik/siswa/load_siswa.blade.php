@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Load Siswa dari Kelas Lain')
 
@@ -55,7 +55,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Manajemen Kelas" subItem="Manajemen Kelas" subLink="{{ route('akademik.kelas.index') }}" sub2Item="Manage Siswa" sub2Link="{{ route('akademik.siswa.index', $kelasTujuan->kelas_ajar_id) }}" active="Load Siswa" />
+    <x-breadcrumb item="Manajemen Kelas" subItem="Manajemen Kelas" subLink="{{ route('akademik.kelas.index') }}" sub2Item="Kelola Siswa" sub2Link="{{ route('akademik.siswa.index', $kelasTujuan->kelas_ajar_id) }}" active="Ambil Data Siswa" />
 
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">

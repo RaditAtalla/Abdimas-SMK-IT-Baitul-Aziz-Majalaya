@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Manajemen Data Siswa')
 
@@ -44,7 +44,7 @@
                                     <th>NIS / NISN</th>
                                     <th>Orang Tua</th>
                                     <th>Domisili</th>
-                                    <th>Action</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
 

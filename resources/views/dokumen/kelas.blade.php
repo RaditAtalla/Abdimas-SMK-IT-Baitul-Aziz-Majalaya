@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Cetak Dokumen')
 
@@ -80,7 +80,7 @@
                         <th>Wali Kelas</th>
                         <th>Jumlah Siswa</th>
                         @role('Bagian Akademik')
-                            <th>Action</th>
+                            <th>Aksi</th>
                         @endrole
                     </tr>
                 </thead>

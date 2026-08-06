@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Manajemen Akun')
 
@@ -71,7 +71,7 @@
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th style="width:140px;">Status</th>
-                                    <th style="width:170px;">Action</th>
+                                    <th style="width:170px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>

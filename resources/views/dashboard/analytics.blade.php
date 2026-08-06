@@ -1,10 +1,10 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Analytics Dashboard')
 
 @section('content')
 
-    <x-breadcrumb item="Dashboard" active="Analytics" />
+    <x-breadcrumb item="Beranda" active="Analytics" />
 
     <!-- [ Main Content ] start -->
     <div class="row">

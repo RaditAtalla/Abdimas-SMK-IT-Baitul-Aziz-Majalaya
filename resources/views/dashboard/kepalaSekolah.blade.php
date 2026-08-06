@@ -1,9 +1,9 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Dashboard Kepala Sekolah')
 
 @section('content')
-    <x-breadcrumb item="Dashboard" active="Kepala Sekolah" />
+    <x-breadcrumb item="Beranda" active="Kepala Sekolah" />
 
     {{-- @php
         dd([

@@ -1,9 +1,9 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Dashboard Wali Kelas')
 
 @section('content')
-  <x-breadcrumb item="Dashboard" active="Wali Kelas" />
+  <x-breadcrumb item="Beranda" active="Wali Kelas" />
 
   <div class="row">
     {{-- FILTER BAR --}}

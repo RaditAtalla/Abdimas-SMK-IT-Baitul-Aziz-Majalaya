@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Absen Harian (Ekstrakurikuler)')
 
@@ -65,7 +65,7 @@
                 <th>Nama</th>
                 <th>Status</th>
                 <th>Keterangan</th>
-                <th class="text-end">Action</th>
+                <th class="text-end">Aksi</th>
               </tr>
             </thead>
 

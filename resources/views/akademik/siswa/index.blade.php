@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Manajemen Siswa')
 
@@ -55,7 +55,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Manajemen Kelas" subItem="Manajemen Kelas" subLink="{{ route('akademik.kelas.index') }}" active="Manage Siswa" />
+    <x-breadcrumb item="Manajemen Kelas" subItem="Manajemen Kelas" subLink="{{ route('akademik.kelas.index') }}" active="Kelola Siswa" />
 
     <div class="row">
         <div class="col-xl-12">
@@ -102,7 +102,7 @@
                                     <th>Username</th>
                                     <th>NIS / NISN</th>
                                     <th>Domisili</th>
-                                    <th>Action</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
 

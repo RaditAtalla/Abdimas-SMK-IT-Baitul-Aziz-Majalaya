@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Ekstrakurikuler')
 
@@ -101,7 +101,7 @@
                                     @endrole
                                     <th>Jumlah Siswa</th>
                                     @role('Bagain Akademik|Super Admin')
-                                        <th>Action</th>
+                                        <th>Aksi</th>
                                     @endrole
                                     <th>Akademik</th>
                                 </tr>
@@ -142,7 +142,7 @@
                                         @endrole
                                         <td>
                                             <a href="{{ route('ekstrakurikuler.manage-siswa.index', $item->ekstrakurikuler_id) }}"
-                                                class="btn btn-sm btn-light-primary mb-1">Manage Siswa</a>
+                                                class="btn btn-sm btn-light-primary mb-1">Kelola Siswa</a>
                                             <a href="{{ route('penilaian_ekstrakurikuler.index', $item->ekstrakurikuler_id) }}"
                                                 class="btn btn-sm btn-light-primary mb-1">Penilaian</a>
                                         </td>
