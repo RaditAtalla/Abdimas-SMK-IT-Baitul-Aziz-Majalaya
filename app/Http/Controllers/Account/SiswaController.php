@@ -478,12 +478,40 @@ class SiswaController extends Controller
     public function ajaxSearchKelas(Request $request)
     {
         $q = $request->input('q');
-        $kelasAjar = KelasAjar::with(['kelas', 'tahunAjaran'])
-            ->whereHas('kelas', function ($query) use ($q) {
-                if ($q) $query->where('nama_kelas', 'like', "%$q%");
-            })
-            ->orWhereHas('tahunAjaran', function ($query) use ($q) {
-                if ($q) $query->where('tahun', 'like', "%$q%")->orWhere('semester', 'like', "%$q%");
+        $showOtherSemester = $request->input('show_other_semester') === 'true';
+        $showOtherTahun = $request->input('show_other_tahun') === 'true';
+        $kelasAjarId = $request->input('kelas_ajar_id');
+
+        $query = KelasAjar::with(['kelas', 'tahunAjaran']);
+
+        if ($kelasAjarId) {
+            $kelasTujuan = KelasAjar::with('tahunAjaran')->find($kelasAjarId);
+            if ($kelasTujuan && $kelasTujuan->tahunAjaran) {
+                $tahun = $kelasTujuan->tahunAjaran->tahun;
+                $semester = $kelasTujuan->tahunAjaran->semester;
+
+                if (!$showOtherTahun) {
+                    $query->whereHas('tahunAjaran', function($q2) use ($tahun) {
+                        $q2->where('tahun', $tahun);
+                    });
+                }
+                
+                if (!$showOtherSemester) {
+                    $query->whereHas('tahunAjaran', function($q2) use ($semester) {
+                        $q2->where('semester', $semester);
+                    });
+                }
+            }
+        }
+
+        $kelasAjar = $query->where(function($subQuery) use ($q) {
+                if ($q) {
+                    $subQuery->whereHas('kelas', function ($q2) use ($q) {
+                        $q2->where('nama_kelas', 'like', "%$q%");
+                    })->orWhereHas('tahunAjaran', function ($q3) use ($q) {
+                        $q3->where('tahun', 'like', "%$q%")->orWhere('semester', 'like', "%$q%");
+                    });
+                }
             })
             ->limit(20)
             ->get();

@@ -291,20 +291,30 @@ class EkstrakurikulerSiswaController extends Controller
     public function ajaxSearchKelas(Request $request, $ekstrakurikuler_id)
     {
         $q = $request->input('q');
+        $showOtherSemester = $request->input('show_other_semester') === 'true';
+        $showOtherTahun = $request->input('show_other_tahun') === 'true';
         $ekskul = Ekstrakurikuler::with('tahunAjaran')->findOrFail($ekstrakurikuler_id);
         
+        $tahun = $ekskul->tahunAjaran->tahun;
         $semester = $ekskul->tahunAjaran->semester;
 
         $kelasAjar = KelasAjar::with(['kelas', 'tahunAjaran'])
-            ->whereHas('tahunAjaran', function($query) use ($semester) {
-                $query->where('semester', $semester);
+            ->when(!$showOtherTahun, function($query) use ($tahun) {
+                $query->whereHas('tahunAjaran', function($q2) use ($tahun) {
+                    $q2->where('tahun', $tahun);
+                });
+            })
+            ->when(!$showOtherSemester, function($query) use ($semester) {
+                $query->whereHas('tahunAjaran', function($q2) use ($semester) {
+                    $q2->where('semester', $semester);
+                });
             })
             ->where(function($query) use ($q) {
                 if ($q) {
                     $query->whereHas('kelas', function ($q2) use ($q) {
                         $q2->where('nama_kelas', 'like', "%$q%");
                     })->orWhereHas('tahunAjaran', function ($q3) use ($q) {
-                        $q3->where('tahun', 'like', "%$q%");
+                        $q3->where('tahun', 'like', "%$q%")->orWhere('semester', 'like', "%$q%");
                     });
                 }
             })

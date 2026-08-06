@@ -77,6 +77,18 @@
                 </div>
             @enderror
             <form method="GET" action="">
+                <div class="form-check mb-2">
+                    <input class="form-check-input check-filter" type="checkbox" id="showOtherSemester" name="show_other_semester" value="true" {{ request('show_other_semester') == 'true' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="showOtherSemester">
+                        Tampilkan kelas dari semester lain
+                    </label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input check-filter" type="checkbox" id="showOtherTahun" name="show_other_tahun" value="true" {{ request('show_other_tahun') == 'true' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="showOtherTahun">
+                        Tampilkan kelas dari tahun ajaran sebelumnya
+                    </label>
+                </div>
                 <div class="mb-3">
                     <label for="kelas_asal_id" class="form-label">Pilih Kelas Asal</label>
                     <select id="kelas_asal_id" name="kelas_asal_id" class="form-select" required></select>
@@ -150,12 +162,22 @@
 
                 kelasSelect.addEventListener('search', function(event) {
                     const q = event.detail.value;
+                    const showOtherSemester = document.getElementById('showOtherSemester').checked;
+                    const showOtherTahun = document.getElementById('showOtherTahun').checked;
                     if (!q || q.length < 2) return;
-                    fetch("{{ route('akademik.ajax.kelas.search') }}?q=" + encodeURIComponent(q))
+                    fetch("{{ route('akademik.ajax.kelas.search') }}?kelas_ajar_id={{ $kelasTujuan->kelas_ajar_id }}&show_other_semester=" + showOtherSemester + "&show_other_tahun=" + showOtherTahun + "&q=" + encodeURIComponent(q))
                         .then(res => res.json())
                         .then(data => {
                             instance.setChoices(data.results, 'id', 'text', true);
                         });
+                });
+
+                const checkFilters = document.querySelectorAll('.check-filter');
+                checkFilters.forEach(function(checkbox) {
+                    checkbox.addEventListener('change', function() {
+                        instance.clearChoices();
+                        instance.clearInput();
+                    });
                 });
 
                 // Set selected jika sudah ada
