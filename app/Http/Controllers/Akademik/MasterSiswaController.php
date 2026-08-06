@@ -7,10 +7,21 @@ use Illuminate\Http\Request;
 use App\Models\OrangTua;
 use App\Models\Siswa;
 use App\Models\User;
+use App\Models\Kabupaten;
+use App\Models\Kelurahan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use Carbon\Carbon;
 
 class MasterSiswaController extends Controller
 {
@@ -311,4 +322,436 @@ class MasterSiswaController extends Controller
                 ->with('error', 'Terjadi kesalahan. Gagal menghapus siswa. Pastikan tidak ada data yang terhubung dengan siswa ini.');
         }
     }
+
+    /**
+     * Download template Excel untuk import data siswa (Solusi 1: Teks Biasa & Ringkas).
+     */
+    public function downloadTemplate()
+    {
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->getDefaultStyle()->getFont()->setName('Calibri')->setSize(11);
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Template Import Siswa');
+
+        // Title & Instruction
+        $sheet->setCellValue('A1', 'TEMPLATE IMPORT DATA MASTER SISWA & ORANG TUA');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+
+        $sheet->setCellValue('A2', 'Petunjuk: Isikan data siswa mulai dari baris 5. Cukup ketik NAMA daerah (misal: Tempat Lahir "Bandung", Kelurahan "Majalaya") tanpa perlu kode ID angka.');
+        $sheet->getStyle('A2')->getFont()->setItalic(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FF555555'));
+
+        // Headers at Row 4 (15 Kolom Ringkas)
+        $headers = [
+            'NIS*', 'NISN*', 'Nama Siswa*', 'Jenis Kelamin (l/p)*',
+            'Tempat Lahir (Kabupaten/Kota)', 'Tgl Lahir (YYYY-MM-DD)*', 'Agama*', 'Sekolah Asal*',
+            'Nama Ayah*', 'Nama Ibu*', 'Pekerjaan Ayah', 'Pekerjaan Ibu',
+            'Alamat (Jalan/RT/RW)*', 'Nama Kelurahan/Desa', 'Password (Opsional)'
+        ];
+
+        $cols = range('A', 'O');
+        foreach ($headers as $index => $header) {
+            $col = $cols[$index];
+            $sheet->setCellValue("{$col}4", $header);
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Header Styling
+        $sheet->getStyle('A4:O4')->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFFFFFFF'));
+        $sheet->getStyle('A4:O4')->getFill()->setFillType(Fill::FILL_SOLID);
+        $sheet->getStyle('A4:O4')->getFill()->getStartColor()->setARGB('FF2B579A');
+        $sheet->getStyle('A4:O4')->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getRowDimension(4)->setRowHeight(28);
+
+        // Contoh Data pada Baris 5 (Teks Biasa)
+        $sampleData = [
+            '25RPL1099', '1002500099', 'Siswa Contoh', 'l',
+            'Bandung', '2008-05-20', 'Islam', 'SMPN 1 Majalaya',
+            'Budi Hidayat', 'Siti Rahma', 'Wiraswasta', 'Ibu Rumah Tangga',
+            'Jl. Raya Majalaya No. 123', 'Majalaya', 'secret123'
+        ];
+
+        foreach ($sampleData as $index => $val) {
+            $col = $cols[$index];
+            $sheet->setCellValueExplicit("{$col}5", $val, DataType::TYPE_STRING);
+        }
+
+        $sheet->getStyle('A5:O5')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle('A4:O5')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+        $filename = "Template_Import_Siswa_SMK_IT_Baitul_Aziz.xlsx";
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    /**
+     * Preview Data Excel sebelum disetujui & disimpan.
+     */
+    public function previewImport(Request $request)
+    {
+        $request->validate([
+            'file_excel' => 'required|mimes:xlsx,xls|max:5120',
+        ], [
+            'file_excel.required' => 'Pilih file Excel yang akan diunggah.',
+            'file_excel.mimes' => 'Format file harus berupa Excel (.xlsx atau .xls).',
+            'file_excel.max' => 'Ukuran file tidak boleh melebihi 5MB.',
+        ]);
+
+        $file = $request->file('file_excel');
+
+        $defaultKab = Kabupaten::where('nama', 'like', '%Bandung%')->first() 
+            ?? Kabupaten::first();
+        $defaultKel = Kelurahan::where('nama', 'like', '%Majalaya%')->first() 
+            ?? Kelurahan::first();
+
+        try {
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $highestRow = $sheet->getHighestRow();
+
+            $previewRows = [];
+            $countNew = 0;
+            $countUpdate = 0;
+
+            for ($row = 5; $row <= $highestRow; $row++) {
+                $nis = trim($sheet->getCell("A{$row}")->getValue());
+                $nisn = trim($sheet->getCell("B{$row}")->getValue());
+                $nama = trim($sheet->getCell("C{$row}")->getValue());
+                $jk = strtolower(trim($sheet->getCell("D{$row}")->getValue()));
+                $kabText = trim($sheet->getCell("E{$row}")->getValue());
+                
+                $rawTglCell = $sheet->getCell("F{$row}");
+                $tglLahir = $this->parseExcelDate($rawTglCell, $rawTglCell->getValue());
+
+                $agama = trim($sheet->getCell("G{$row}")->getValue());
+                $pendidikanPrev = trim($sheet->getCell("H{$row}")->getValue());
+                $namaAyah = trim($sheet->getCell("I{$row}")->getValue());
+                $namaIbu = trim($sheet->getCell("J{$row}")->getValue());
+                $pekAyah = trim($sheet->getCell("K{$row}")->getValue());
+                $pekIbu = trim($sheet->getCell("L{$row}")->getValue());
+                $alamat = trim($sheet->getCell("M{$row}")->getValue());
+                $kelText = trim($sheet->getCell("N{$row}")->getValue());
+                $rawPassword = trim($sheet->getCell("O{$row}")->getValue());
+
+                // Lewati baris kosong
+                if (empty($nis) && empty($nama)) {
+                    continue;
+                }
+
+                // Smart Text Match Tempat Lahir
+                $finalKabId = $defaultKab?->kabupaten_id;
+                $kabLabel = $defaultKab?->nama ?? '-';
+                if (!empty($kabText)) {
+                    $foundKab = Kabupaten::where('nama', 'like', "%{$kabText}%")->first();
+                    if ($foundKab) {
+                        $finalKabId = $foundKab->kabupaten_id;
+                        $kabLabel = $foundKab->nama;
+                    }
+                }
+
+                // Smart Text Match Kelurahan Domisili
+                $finalKelId = $defaultKel?->kelurahan_id;
+                $kelLabel = $defaultKel?->nama ?? '-';
+                if (!empty($kelText)) {
+                    $foundKel = Kelurahan::where('nama', 'like', "%{$kelText}%")->first();
+                    if ($foundKel) {
+                        $finalKelId = $foundKel->kelurahan_id;
+                        $kelLabel = $foundKel->nama;
+                    }
+                }
+
+                // Cek status keberadaan di database
+                $existingSiswa = Siswa::where('nis', $nis)->orWhere('nisn', $nisn)->first();
+                $isUpdate = !empty($existingSiswa);
+
+                if ($isUpdate) {
+                    $countUpdate++;
+                } else {
+                    $countNew++;
+                }
+
+                $previewRows[] = [
+                    'row' => $row,
+                    'nis' => $nis,
+                    'nisn' => $nisn,
+                    'nama' => $nama,
+                    'jk' => in_array($jk, ['l', 'p']) ? $jk : 'l',
+                    'kab_text' => $kabText,
+                    'final_kab_id' => $finalKabId,
+                    'kab_label' => $kabLabel,
+                    'tgl_lahir' => $tglLahir,
+                    'agama' => !empty($agama) ? $agama : 'Islam',
+                    'pendidikan_prev' => !empty($pendidikanPrev) ? $pendidikanPrev : '-',
+                    'nama_ayah' => !empty($namaAyah) ? $namaAyah : '-',
+                    'nama_ibu' => !empty($namaIbu) ? $namaIbu : '-',
+                    'pek_ayah' => !empty($pekAyah) ? $pekAyah : '-',
+                    'pek_ibu' => !empty($pekIbu) ? $pekIbu : '-',
+                    'alamat' => !empty($alamat) ? $alamat : '-',
+                    'kel_text' => $kelText,
+                    'final_kel_id' => $finalKelId,
+                    'kel_label' => $kelLabel,
+                    'password' => !empty($rawPassword) ? $rawPassword : $nis,
+                    'is_update' => $isUpdate,
+                    'status_badge' => $isUpdate ? 'warning' : 'success',
+                    'status_text' => $isUpdate ? 'Perbarui Data' : 'Siswa Baru',
+                ];
+            }
+
+            if (empty($previewRows)) {
+                return redirect()->back()->with('error', 'File Excel tidak berisi data siswa yang valid.');
+            }
+
+            session(['master_siswa_import_data' => $previewRows]);
+
+            return view('akademik.master_siswa.preview_import', compact('previewRows', 'countNew', 'countUpdate'));
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Gagal membaca file Excel: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Konfirmasi dan Eksekusi Simpan Data Excel ke Database (Menerima Suntingan Interaktif Form).
+     */
+    public function confirmImport(Request $request)
+    {
+        $submittedRows = $request->input('rows', []);
+
+        if (empty($submittedRows) || !is_array($submittedRows)) {
+            return redirect()->route('akademik.master-siswa.index')
+                ->with('error', 'Tidak ada data siswa yang dikirimkan untuk disimpan.');
+        }
+
+        $defaultKabId = Kabupaten::where('nama', 'like', '%Bandung%')->first()?->kabupaten_id 
+            ?? (Kabupaten::first()?->kabupaten_id ?? '32.04');
+
+        $defaultKelId = Kelurahan::where('nama', 'like', '%Majalaya%')->first()?->kelurahan_id 
+            ?? (Kelurahan::first()?->kelurahan_id ?? '32.04.33.2001');
+
+        try {
+            DB::beginTransaction();
+
+            $newCount = 0;
+            $updateCount = 0;
+
+            foreach ($submittedRows as $item) {
+                $nis = trim($item['nis'] ?? '');
+                $nisn = trim($item['nisn'] ?? '');
+                $nama = trim($item['nama'] ?? '');
+                $jk = strtolower(trim($item['jk'] ?? 'l'));
+                $kabText = trim($item['kab_text'] ?? '');
+                $tglLahir = $this->parseExcelDate(null, $item['tgl_lahir'] ?? '');
+                $agama = trim($item['agama'] ?? 'Islam');
+                $pendidikanPrev = trim($item['pendidikan_prev'] ?? '-');
+                $namaAyah = trim($item['nama_ayah'] ?? '-');
+                $namaIbu = trim($item['nama_ibu'] ?? '-');
+                $pekAyah = trim($item['pek_ayah'] ?? '-');
+                $pekIbu = trim($item['pek_ibu'] ?? '-');
+                $alamat = trim($item['alamat'] ?? '-');
+                $kelText = trim($item['kel_text'] ?? '');
+                $rawPassword = trim($item['password'] ?? '');
+
+                if (empty($nis) || empty($nama)) {
+                    continue;
+                }
+
+                // Smart Text Match untuk Tempat Lahir
+                $finalKabId = $defaultKabId;
+                if (!empty($kabText)) {
+                    $foundKab = Kabupaten::where('nama', 'like', "%{$kabText}%")->first();
+                    if ($foundKab) {
+                        $finalKabId = $foundKab->kabupaten_id;
+                    }
+                }
+
+                // Smart Text Match untuk Kelurahan Domisili
+                $finalKelId = $defaultKelId;
+                if (!empty($kelText)) {
+                    $foundKel = Kelurahan::where('nama', 'like', "%{$kelText}%")->first();
+                    if ($foundKel) {
+                        $finalKelId = $foundKel->kelurahan_id;
+                    }
+                }
+
+                $password = !empty($rawPassword) ? $rawPassword : $nis;
+
+                $siswa = Siswa::where('nis', $nis)->orWhere('nisn', $nisn)->first();
+
+                if ($siswa) {
+                    // ===== MODE UPDATE =====
+                    if ($siswa->user) {
+                        $siswa->user->update([
+                            'name' => $nama,
+                            'username' => $nis,
+                            'password' => Hash::make($password),
+                        ]);
+                    }
+
+                    if ($siswa->orangTua) {
+                        $siswa->orangTua->update([
+                            'nama_ayah' => !empty($namaAyah) ? $namaAyah : '-',
+                            'nama_ibu' => !empty($namaIbu) ? $namaIbu : '-',
+                            'pekerjaan_ayah' => !empty($pekAyah) ? $pekAyah : '-',
+                            'pekerjaan_ibu' => !empty($pekIbu) ? $pekIbu : '-',
+                            'jalan' => !empty($alamat) ? $alamat : '-',
+                            'kelurahan_id' => $finalKelId,
+                        ]);
+
+                        if ($siswa->orangTua->user) {
+                            $siswa->orangTua->user->update([
+                                'name' => !empty($namaAyah) && $namaAyah !== '-' ? $namaAyah : "Ortu $nama",
+                            ]);
+                        }
+                    }
+
+                    $siswa->update([
+                        'nis' => $nis,
+                        'nisn' => $nisn,
+                        'nama' => $nama,
+                        'jenis_kelamin' => in_array($jk, ['l', 'p']) ? $jk : 'l',
+                        'tempat_lahir_kabupaten_id' => $finalKabId,
+                        'tanggal_lahir' => $tglLahir,
+                        'agama' => $agama,
+                        'pendidikan_sebelumnya' => $pendidikanPrev,
+                        'alamat' => $alamat,
+                        'kelurahan_id' => $finalKelId,
+                    ]);
+
+                    $updateCount++;
+                } else {
+                    // ===== MODE CREATE BARU =====
+                    $userSiswa = User::create([
+                        'name' => $nama,
+                        'username' => $nis,
+                        'email' => null,
+                        'password' => Hash::make($password),
+                    ]);
+                    $userSiswa->assignRole('Siswa');
+
+                    $ortuUsername = 'ortu_' . $nis;
+                    $suffix = 1;
+                    $baseUsername = $ortuUsername;
+                    while (User::where('username', $ortuUsername)->exists()) {
+                        $ortuUsername = $baseUsername . '_' . $suffix++;
+                    }
+
+                    $userOrtu = User::create([
+                        'name' => !empty($namaAyah) && $namaAyah !== '-' ? $namaAyah : "Ortu $nama",
+                        'username' => $ortuUsername,
+                        'email' => null,
+                        'password' => Hash::make($password),
+                    ]);
+                    $userOrtu->assignRole('Orang Tua');
+
+                    $orangTua = OrangTua::create([
+                        'user_id' => $userOrtu->id,
+                        'nama_ayah' => !empty($namaAyah) ? $namaAyah : '-',
+                        'nama_ibu' => !empty($namaIbu) ? $namaIbu : '-',
+                        'pekerjaan_ayah' => !empty($pekAyah) ? $pekAyah : '-',
+                        'pekerjaan_ibu' => !empty($pekIbu) ? $pekIbu : '-',
+                        'jalan' => !empty($alamat) ? $alamat : '-',
+                        'kelurahan_id' => $finalKelId,
+                    ]);
+
+                    Siswa::create([
+                        'user_id' => $userSiswa->id,
+                        'nis' => $nis,
+                        'nisn' => $nisn,
+                        'nama' => $nama,
+                        'jenis_kelamin' => in_array($jk, ['l', 'p']) ? $jk : 'l',
+                        'tempat_lahir_kabupaten_id' => $finalKabId,
+                        'tanggal_lahir' => $tglLahir,
+                        'agama' => $agama,
+                        'pendidikan_sebelumnya' => $pendidikanPrev,
+                        'alamat' => $alamat,
+                        'orang_tua_id' => $orangTua->orang_tua_id,
+                        'kelurahan_id' => $finalKelId,
+                    ]);
+
+                    $newCount++;
+                }
+            }
+
+            DB::commit();
+            session()->forget('master_siswa_import_data');
+
+            $msg = "Proses impor selesai! Total $newCount siswa baru berhasil ditambahkan";
+            if ($updateCount > 0) {
+                $msg .= " dan $updateCount data siswa berhasil diperbarui.";
+            } else {
+                $msg .= ".";
+            }
+
+            return redirect()->route('akademik.master-siswa.index')->with('success', $msg);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->route('akademik.master-siswa.index')
+                ->with('error', 'Gagal memproses simpan data impor: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Smart Date Parser untuk mengonversi berbagai format tanggal Excel menjadi YYYY-MM-DD.
+     */
+    private function parseExcelDate($cell, $rawVal): string
+    {
+        if (empty($rawVal)) {
+            return date('Y-m-d');
+        }
+
+        // 1. Cek jika cell merupakan Excel Serial Date Number atau formatted DateTime oleh PhpSpreadsheet
+        if ($cell && ExcelDate::isDateTime($cell)) {
+            try {
+                return ExcelDate::excelToDateTimeObject($rawVal)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                // Lanjut ke pemeriksaan alternatif
+            }
+        }
+
+        // 2. Cek jika nilai berupa angka murni (Excel Date Serial Number)
+        if (is_numeric($rawVal) && (float)$rawVal > 1000) {
+            try {
+                return ExcelDate::excelToDateTimeObject((float)$rawVal)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                // Lanjut ke alternatif
+            }
+        }
+
+        $val = trim((string) $rawVal);
+
+        // 3. Format YYYY-MM-DD
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) {
+            return $val;
+        }
+
+        // 4. Format DD/MM/YYYY atau DD-MM-YYYY (misal: 21/05/2008 atau 21-05-2008)
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', $val, $matches)) {
+            $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+            $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+            $year = $matches[3];
+            return "{$year}-{$month}-{$day}";
+        }
+
+        // 5. Format YYYY/MM/DD atau YYYY.MM.DD
+        if (preg_match('/^(\d{4})[\/\.](\d{1,2})[\/\.](\d{1,2})$/', $val, $matches)) {
+            $year = $matches[1];
+            $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+            $day = str_pad($matches[3], 2, '0', STR_PAD_LEFT);
+            return "{$year}-{$month}-{$day}";
+        }
+
+        // 6. Percobaan fleksibel menggunakan Carbon / strtotime
+        try {
+            return Carbon::parse($val)->format('Y-m-d');
+        } catch (\Throwable $e) {
+            return date('Y-m-d');
+        }
+    }
 }
+
