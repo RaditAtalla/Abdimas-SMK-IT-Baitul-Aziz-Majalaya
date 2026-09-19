@@ -122,6 +122,12 @@
                                             @if ($s)
                                                 <a href="{{ route('akademik.siswa.edit', [$kelas_ajar->kelas_ajar_id, $s->siswa_id]) }}"
                                                     class="btn btn-sm btn-light-warning mb-1">Edit</a>
+                                                <button type="button" class="btn btn-sm btn-light-info mb-1 btn-pindahkan-siswa"
+                                                    data-bs-toggle="modal" data-bs-target="#modalPindahkanSiswa"
+                                                    data-siswa-id="{{ $s->siswa_id }}"
+                                                    data-siswa-nama="{{ $s?->user?->name ?? ($s?->nama ?? '-') }}">
+                                                    Pindahkan
+                                                </button>
                                                 <form
                                                     action="{{ route('akademik.siswa.destroy', [$kelas_ajar->kelas_ajar_id, $s->siswa_id]) }}"
                                                     method="POST" style="display:inline"
@@ -169,6 +175,44 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary">Tambahkan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalPindahkanSiswa" tabindex="-1" aria-labelledby="modalPindahkanSiswaLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="formPindahkanSiswa" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalPindahkanSiswaLabel">Pindahkan Siswa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Pindahkan <strong id="namaSiswaPindah"></strong> ke kelas:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input pindah-filter" type="checkbox" id="pindahShowOtherSemester"
+                                value="true">
+                            <label class="form-check-label" for="pindahShowOtherSemester">Tampilkan semua semester</label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input pindah-filter" type="checkbox" id="pindahShowOtherTahun"
+                                value="true">
+                            <label class="form-check-label" for="pindahShowOtherTahun">Tampilkan semua tahun ajaran</label>
+                        </div>
+                        <label for="tujuan_kelas_ajar_id" class="form-label">Kelas Tujuan</label>
+                        <select id="tujuan_kelas_ajar_id" name="tujuan_kelas_ajar_id" class="form-select"
+                            style="width:100%" required></select>
+                        @error('tujuan_kelas_ajar_id')
+                            <div class="text-danger mt-2">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-info">Pindahkan</button>
                     </div>
                 </form>
             </div>
@@ -226,6 +270,55 @@
 
                 siswaSelect.addEventListener('search', function(event) {
                     doSearch(event.detail.value);
+                });
+            }
+
+            const tujuanSelect = document.getElementById('tujuan_kelas_ajar_id');
+            const formPindahkan = document.getElementById('formPindahkanSiswa');
+            if (tujuanSelect && formPindahkan) {
+                const tujuanChoices = new Choices(tujuanSelect, {
+                    searchEnabled: true,
+                    placeholder: true,
+                    placeholderValue: 'Cari kelas...',
+                    shouldSort: false,
+                    itemSelectText: '',
+                    searchResultLimit: 15,
+                    renderChoiceLimit: 15
+                });
+
+                let searchTimeout;
+                tujuanSelect.addEventListener('search', function(event) {
+                    clearTimeout(searchTimeout);
+                    const q = event.detail.value;
+                    if (!q || q.length < 2) return;
+                    searchTimeout = setTimeout(function() {
+                        const url = new URL("{{ route('akademik.ajax.kelas.search') }}", window.location.origin);
+                        url.searchParams.set('kelas_ajar_id', '{{ $kelas_ajar->kelas_ajar_id }}');
+                        url.searchParams.set('show_other_semester', document.getElementById('pindahShowOtherSemester').checked);
+                        url.searchParams.set('show_other_tahun', document.getElementById('pindahShowOtherTahun').checked);
+                        url.searchParams.set('q', q);
+                        fetch(url.toString())
+                            .then(res => res.json())
+                            .then(data => tujuanChoices.setChoices(data.results, 'id', 'text', true));
+                    }, 300);
+                });
+
+                document.querySelectorAll('.pindah-filter').forEach(function(checkbox) {
+                    checkbox.addEventListener('change', function() {
+                        tujuanChoices.clearChoices();
+                        tujuanChoices.clearInput();
+                    });
+                });
+
+                document.querySelectorAll('.btn-pindahkan-siswa').forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        tujuanChoices.clearStore();
+                        tujuanChoices.clearChoices();
+                        tujuanChoices.clearInput();
+                        document.getElementById('namaSiswaPindah').textContent = button.dataset.siswaNama;
+                        formPindahkan.action = "{{ url('akademik/kelas/' . $kelas_ajar->kelas_ajar_id . '/siswa') }}/" +
+                            button.dataset.siswaId + '/pindahkan';
+                    });
                 });
             }
         });

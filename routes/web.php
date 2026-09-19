@@ -78,6 +78,7 @@ Route::middleware(['auth', 'role:Bagian Akademik'])->prefix('akademik')->name('a
         Route::resource('siswa', SiswaController::class);
         Route::get('ajax/search-siswa', [SiswaController::class, 'ajaxSearchSiswa'])->name('kelas.ajax.search-siswa');
         Route::post('add-existing-siswa', [SiswaController::class, 'addExistingSiswa'])->name('kelas.add-existing-siswa');
+        Route::post('siswa/{siswa}/pindahkan', [SiswaController::class, 'pindahkanSiswa'])->name('kelas.pindahkan-siswa');
 
         Route::get('load-siswa', [SiswaController::class, 'showLoadSiswaForm'])->name('kelas.show-load-siswa');
         Route::post('load-siswa', [SiswaController::class, 'loadSiswaFromKelas'])->name('kelas.load-siswa');
