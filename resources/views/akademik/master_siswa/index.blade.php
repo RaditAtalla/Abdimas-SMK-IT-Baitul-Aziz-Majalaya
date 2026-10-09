@@ -14,12 +14,21 @@
                     </div>
 
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <form action="" method="GET" class="d-flex">
+                        <form action="" method="GET" class="d-flex me-1">
                             <input type="text" name="q" class="form-control me-2" placeholder="Cari Nama/NIS/NISN..." value="{{ request('q') }}">
                             <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
                         </form>
+                        
+                        <a href="{{ route('akademik.master-siswa.download-template') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-file-earmark-excel me-1"></i> Download Template
+                        </a>
+
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalImportSiswa">
+                            <i class="bi bi-upload me-1"></i> Import Excel
+                        </button>
+
                         <a href="{{ route('akademik.master-siswa.create') }}" class="btn btn-success">
-                            <i class="bi bi-plus-lg"></i> Tambah Siswa
+                            <i class="bi bi-plus-lg me-1"></i> Tambah Siswa
                         </a>
                     </div>
                 </div>
@@ -32,7 +41,7 @@
                         <div class="alert alert-warning mb-3">{{ session('warning') }}</div>
                     @endif
                     @if (session('error'))
-                        <div class="alert alert-danger">{{ session('error') }}</div>
+                        <div class="alert alert-danger mb-3">{{ session('error') }}</div>
                     @endif
                     <div class="table-responsive">
                         <table class="table">
@@ -85,6 +94,36 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Import Excel Siswa -->
+    <div class="modal fade" id="modalImportSiswa" tabindex="-1" aria-labelledby="modalImportSiswaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="{{ route('akademik.master-siswa.preview-import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalImportSiswaLabel"><i class="bi bi-file-earmark-excel text-success me-2"></i>Import Data Siswa dari Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info mb-3">
+                            <i class="bi bi-info-circle me-1"></i> Pastikan format file sesuai dengan template. Jika belum memiliki template, silakan 
+                            <a href="{{ route('akademik.master-siswa.download-template') }}" class="alert-link fw-bold">Download Template Excel</a> terlebih dahulu.
+                        </div>
+                        <div class="mb-3">
+                            <label for="file_excel" class="form-label fw-bold">Pilih File Excel (.xlsx / .xls)</label>
+                            <input type="file" class="form-control" id="file_excel" name="file_excel" accept=".xlsx, .xls" required>
+                            <div class="form-text">Maksimal ukuran file: 5MB. Data akan ditampilkan terlebih dahulu untuk Anda periksa sebelum disimpan.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-eye me-1"></i> Unggah & Pratinjau Data</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

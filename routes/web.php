@@ -95,6 +95,9 @@ Route::middleware(['auth', 'role:Bagian Akademik'])->prefix('akademik')->name('a
     Route::get('kelas/ajax/kelas/search', [SiswaController::class, 'ajaxSearchKelas'])->name('ajax.kelas.search');
     Route::resource('staff', StaffController::class);
     
+    Route::get('master-siswa/download-template', [MasterSiswaController::class, 'downloadTemplate'])->name('master-siswa.download-template');
+    Route::post('master-siswa/preview-import', [MasterSiswaController::class, 'previewImport'])->name('master-siswa.preview-import');
+    Route::post('master-siswa/confirm-import', [MasterSiswaController::class, 'confirmImport'])->name('master-siswa.confirm-import');
     Route::resource('master-siswa', MasterSiswaController::class)->parameters(['master-siswa' => 'siswa']);
     Route::resource('master-orang-tua', MasterOrangTuaController::class)->parameters(['master-orang-tua' => 'orangTua'])->except(['create', 'store']);
 });
