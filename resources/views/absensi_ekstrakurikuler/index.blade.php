@@ -24,6 +24,9 @@
           </div>
 
           <div class="d-flex gap-2">
+            <button type="submit" form="absensiForm" class="btn btn-primary">
+              <i class="bi bi-save me-1"></i> Simpan Absensi
+            </button>
             <a href="{{ route('absensi.ekstrakurikuler.rekap', $ekstrakurikuler->ekstrakurikuler_id) }}"
                class="btn btn-outline-secondary">
               Rekap Absensi
@@ -58,126 +61,117 @@
         @if (session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
         @if (session('warning')) <div class="alert alert-warning">{{ session('warning') }}</div> @endif
 
-        <div class="table-responsive">
-          <table class="table table-hover" id="pc-dt-simple">
-            <thead>
-              <tr>
-                <th>Nama</th>
-                <th>Status</th>
-                <th>Keterangan</th>
-                <th class="text-end">Aksi</th>
-              </tr>
-            </thead>
+        <form id="absensiForm" method="POST" action="{{ route('absensi.ekstrakurikuler.harian.store', $ekstrakurikuler->ekstrakurikuler_id) }}">
+          @csrf
+          <div id="hiddenInputsContainer"></div>
 
-            <tbody>
-              @foreach ($students as $s)
-                @php
-                  $att = $attendanceMap->get($s['siswa_ekstrakurikuler_id']);
-                @endphp
-
+          <div class="table-responsive">
+            <table class="table table-hover" id="pc-dt-simple">
+              <thead>
                 <tr>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <div class="flex-shrink-0">
-                        <img src="{{ $s['avatar'] }}" alt="user" class="img-radius wid-40" />
-                      </div>
-                      <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-0">{{ $s['name'] }}</h6>
-                        <small class="text-muted">{{ $ekstrakurikuler->nama_pelajaran }}</small>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td>
-                    @if($att)
-                      <span class="badge bg-light-primary text-capitalize">{{ $att->status }}</span>
-                    @else
-                      <span class="badge bg-light-secondary">Belum</span>
-                    @endif
-                  </td>
-
-                  <td><span class="text-muted">{{ $att?->note ?: '-' }}</span></td>
-
-                  <td class="text-end">
-                    <button
-                      type="button"
-                      class="btn {{ $att ? 'btn-outline-primary' : 'btn-primary' }} btn-sm btnOpenModal"
-                      data-bs-toggle="modal"
-                      data-bs-target="#absenModal"
-                      data-date="{{ $selectedDate }}"
-                      data-siswa-ekstrakurikuler-id="{{ $s['siswa_ekstrakurikuler_id'] }}"
-                      data-student-name="{{ $s['name'] }}"
-                      data-status="{{ $att?->status ?? '' }}"
-                      data-note="{{ $att?->note ?? '' }}"
-                      data-mode="{{ $att ? 'edit' : 'create' }}"
-                    >
-                      {{ $att ? 'Edit' : 'Absensi' }}
-                    </button>
-                  </td>
+                  <th style="width: 25%;">Nama</th>
+                  <th style="width: 15%;">Status</th>
+                  <th style="width: 25%;">Absensi</th>
+                  <th style="width: 35%;">Keterangan</th>
                 </tr>
-              @endforeach
-            </tbody>
+              </thead>
 
-          </table>
-        </div>
-                </div>
-        <div class="ps-3 mb-3">
+              <tbody>
+                @foreach ($students as $s)
+                  @php
+                    $att = $attendanceMap->get($s['siswa_ekstrakurikuler_id']);
+                    $currentStatus = $att?->status ?? '';
+                    $currentNote = $att?->note ?? '';
+                  @endphp
+
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                          <img src="{{ $s['avatar'] }}" alt="user" class="img-radius wid-40" />
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                          <h6 class="mb-0">{{ $s['name'] }}</h6>
+                          <small class="text-muted">{{ $ekstrakurikuler->nama_pelajaran }}</small>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      @if($att)
+                        @php
+                          $badgeClass = match($att->status) {
+                              'hadir' => 'bg-light-success text-success',
+                              'alpha' => 'bg-light-danger text-danger',
+                              'sakit' => 'bg-light-warning text-warning',
+                              'izin'  => 'bg-light-info text-info',
+                              default => 'bg-light-primary text-primary',
+                          };
+                        @endphp
+                        <span class="badge {{ $badgeClass }} text-capitalize">{{ $att->status }}</span>
+                      @else
+                        <span class="badge bg-light-secondary">Belum</span>
+                      @endif
+                    </td>
+
+                    <td>
+                      <div class="d-flex gap-2">
+                        <div class="form-check">
+                          <input class="form-check-input absensi-radio" type="radio"
+                            name="status_{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            id="status_hadir_{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            data-se-id="{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            value="hadir" {{ $currentStatus === 'hadir' ? 'checked' : '' }}>
+                          <label class="form-check-label" for="status_hadir_{{ $s['siswa_ekstrakurikuler_id'] }}">Hadir</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input absensi-radio" type="radio"
+                            name="status_{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            id="status_alpha_{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            data-se-id="{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            value="alpha" {{ $currentStatus === 'alpha' ? 'checked' : '' }}>
+                          <label class="form-check-label" for="status_alpha_{{ $s['siswa_ekstrakurikuler_id'] }}">Alpha</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input absensi-radio" type="radio"
+                            name="status_{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            id="status_sakit_{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            data-se-id="{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            value="sakit" {{ $currentStatus === 'sakit' ? 'checked' : '' }}>
+                          <label class="form-check-label" for="status_sakit_{{ $s['siswa_ekstrakurikuler_id'] }}">Sakit</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input absensi-radio" type="radio"
+                            name="status_{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            id="status_izin_{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            data-se-id="{{ $s['siswa_ekstrakurikuler_id'] }}"
+                            value="izin" {{ $currentStatus === 'izin' ? 'checked' : '' }}>
+                          <label class="form-check-label" for="status_izin_{{ $s['siswa_ekstrakurikuler_id'] }}">Izin</label>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      <input type="text" class="form-control form-control-sm absensi-note"
+                        data-se-id="{{ $s['siswa_ekstrakurikuler_id'] }}"
+                        value="{{ $currentNote }}"
+                        placeholder="Keterangan (opsional)...">
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+
+            </table>
+          </div>
+        </form>
+
+        <div class="ps-3 mb-3 mt-3">
           <a href="{{ route('absensi.ekstrakurikuler.list') }}" class="btn btn-light-secondary px-3">
             Kembali
           </a>
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
-
-{{-- MODAL --}}
-<div class="modal fade" id="absenModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <form method="POST" action="{{ route('absensi.ekstrakurikuler.harian.store', $ekstrakurikuler->ekstrakurikuler_id) }}">
-        @csrf
-
-        <div class="modal-header">
-          <h5 class="modal-title" id="absenModalTitle">Absensi</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          {{-- ✅ kasih default value biar nggak mungkin kosong --}}
-          <input type="hidden" name="tanggal" id="mTanggal" value="{{ $selectedDate }}">
-          <input type="hidden" name="siswa_ekstrakurikuler_id" id="mSiswaEkstraId" value="">
-
-          <div class="mb-2">
-            <label class="form-label mb-1">Siswa</label>
-            <input type="text" class="form-control" id="mStudentName" readonly>
-          </div>
-
-          <div class="mb-2">
-            <label class="form-label mb-1">Status</label>
-            <select class="form-select" name="status" id="mStatus" required>
-              <option value="">Pilih status</option>
-              <option value="hadir">Hadir</option>
-              <option value="alpha">Alpha</option>
-              <option value="sakit">Sakit</option>
-              <option value="izin">Izin</option>
-            </select>
-          </div>
-
-          <div class="mb-0 d-none" id="noteWrapper">
-            <label class="form-label mb-1">Keterangan</label>
-            <textarea class="form-control" name="note" id="mNote" rows="2"
-              placeholder="Contoh: demam / izin keluarga / dsb"></textarea>
-            <small class="text-muted">Wajib diisi untuk status Izin / Sakit.</small>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-primary" id="mSubmitBtn">Simpan</button>
-        </div>
-      </form>
     </div>
   </div>
 </div>
@@ -215,51 +209,161 @@
     window.location.href = `${window.location.pathname}?${params.toString()}`;
   });
 
-  // modal refs
-  const title = document.getElementById('absenModalTitle');
-  const mTanggal = document.getElementById('mTanggal');
-  const mSiswaEkstraId = document.getElementById('mSiswaEkstraId');
-  const mStudentName = document.getElementById('mStudentName');
-  const mStatus = document.getElementById('mStatus');
-  const mNote = document.getElementById('mNote');
-  const noteWrapper = document.getElementById('noteWrapper');
-  const btnSubmit = document.getElementById('mSubmitBtn');
+  // ====== ATTENDANCE STATE MANAGEMENT ACROSS PAGINATION ======
+  const attendanceState = {};
 
-  function toggleNote(status) {
-    const need = (status === 'izin' || status === 'sakit');
-    if (need) { noteWrapper.classList.remove('d-none'); mNote.required = true; }
-    else { noteWrapper.classList.add('d-none'); mNote.required = false; mNote.value = ''; }
+  // Initialize attendanceState from initial PHP render (keyed strictly by student siswa_ekstrakurikuler_id as String)
+  @foreach ($students as $s)
+    @php $att = $attendanceMap->get($s['siswa_ekstrakurikuler_id']); @endphp
+    attendanceState[String("{{ $s['siswa_ekstrakurikuler_id'] }}")] = {
+      status: {!! json_encode($att?->status ?? '') !!},
+      note: {!! json_encode($att?->note ?? '') !!}
+    };
+  @endforeach
+
+  function restoreCurrentPageInputs() {
+    // Restore Radio Buttons for visible rows on the active page
+    document.querySelectorAll('.absensi-radio').forEach(radio => {
+      const seId = String(radio.getAttribute('data-se-id') || '');
+      if (!seId || !attendanceState[seId]) return;
+
+      const savedStatus = attendanceState[seId].status || '';
+      if (savedStatus) {
+        radio.checked = (radio.value === savedStatus);
+      } else {
+        radio.checked = false;
+      }
+    });
+
+    // Restore Note Inputs for visible rows on the active page
+    document.querySelectorAll('.absensi-note').forEach(input => {
+      const seId = String(input.getAttribute('data-se-id') || '');
+      if (!seId || !attendanceState[seId]) return;
+
+      const savedNote = attendanceState[seId].note !== undefined ? attendanceState[seId].note : '';
+      input.value = savedNote;
+    });
   }
 
-  mStatus.addEventListener('change', () => toggleNote(mStatus.value));
+  // Listen to user changes
+  document.addEventListener('change', function(e) {
+    const radio = e.target.closest('.absensi-radio');
+    if (!radio) return;
 
-  // ✅ EVENT DELEGATION: aman walau DataTable redraw
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btnOpenModal');
-    if (!btn) return;
+    const seId = String(radio.getAttribute('data-se-id') || '');
+    if (!seId) return;
 
-    const mode = btn.dataset.mode || 'create';
-
-    // data-siswa-ekstrakurikuler-id => dataset.siswaEkstrakurikulerId
-    mTanggal.value = btn.dataset.date || dateSelected.value || '';
-    mSiswaEkstraId.value = btn.dataset.siswaEkstrakurikulerId || '';
-
-    mStudentName.value = btn.dataset.studentName || '';
-    mStatus.value = btn.dataset.status || '';
-    mNote.value = btn.dataset.note || '';
-
-    toggleNote(mStatus.value);
-
-    if (mode === 'edit') { title.textContent = 'Edit Absensi'; btnSubmit.textContent = 'Update'; }
-    else { title.textContent = 'Input Absensi'; btnSubmit.textContent = 'Simpan'; }
+    if (!attendanceState[seId]) {
+      attendanceState[seId] = { status: '', note: '' };
+    }
+    attendanceState[seId].status = radio.value;
   });
 
-  // optional: reset modal saat ditutup biar bersih
-  const modalEl = document.getElementById('absenModal');
-  modalEl.addEventListener('hidden.bs.modal', () => {
-    mStatus.value = '';
-    mNote.value = '';
-    toggleNote('');
+  document.addEventListener('input', function(e) {
+    const input = e.target.closest('.absensi-note');
+    if (!input) return;
+
+    const seId = String(input.getAttribute('data-se-id') || '');
+    if (!seId) return;
+
+    if (!attendanceState[seId]) {
+      attendanceState[seId] = { status: '', note: '' };
+    }
+    attendanceState[seId].note = input.value;
   });
+
+  // Schedule restoration asynchronously so Simple-DataTables has completely finished rendering the new DOM page
+  function triggerRestoration() {
+    setTimeout(restoreCurrentPageInputs, 0);
+    setTimeout(restoreCurrentPageInputs, 50);
+  }
+
+  // 1. Observe DOM mutations in tbody
+  const tbody = document.querySelector('#pc-dt-simple tbody');
+  if (tbody) {
+    const observer = new MutationObserver(function() {
+      triggerRestoration();
+    });
+    observer.observe(tbody, { childList: true, subtree: true });
+  }
+
+  // 2. Listen to clicks on pagination & headers (sorting)
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.datatable-pagination') || e.target.closest('.datatable-selector') || e.target.closest('#pc-dt-simple thead')) {
+      triggerRestoration();
+    }
+  });
+
+  // 3. Attach directly to DataTable instance events if available
+  function attachDtListeners() {
+    if (window.dt) {
+      window.dt.on('datatable.page', triggerRestoration);
+      window.dt.on('datatable.sort', triggerRestoration);
+      window.dt.on('datatable.search', triggerRestoration);
+      window.dt.on('datatable.perpage', triggerRestoration);
+    } else {
+      setTimeout(attachDtListeners, 100);
+    }
+  }
+  attachDtListeners();
+
+  // Initial trigger
+  triggerRestoration();
+
+  // ====== FORM SUBMISSION ======
+  const absensiForm = document.getElementById('absensiForm');
+  if (absensiForm) {
+    absensiForm.addEventListener('submit', function(e) {
+      // Sync currently visible inputs before submit
+      document.querySelectorAll('.absensi-radio:checked').forEach(radio => {
+        const seId = String(radio.getAttribute('data-se-id') || '');
+        if (seId) {
+          if (!attendanceState[seId]) attendanceState[seId] = {};
+          attendanceState[seId].status = radio.value;
+        }
+      });
+      document.querySelectorAll('.absensi-note').forEach(input => {
+        const seId = String(input.getAttribute('data-se-id') || '');
+        if (seId) {
+          if (!attendanceState[seId]) attendanceState[seId] = {};
+          attendanceState[seId].note = input.value;
+        }
+      });
+
+      const container = document.getElementById('hiddenInputsContainer');
+      container.innerHTML = '';
+
+      const hiddenDate = document.createElement('input');
+      hiddenDate.type = 'hidden';
+      hiddenDate.name = 'tanggal';
+      hiddenDate.value = dateSelected.value || '{{ $selectedDate }}';
+      container.appendChild(hiddenDate);
+
+      let idx = 0;
+      for (const [seId, val] of Object.entries(attendanceState)) {
+        if (val && val.status) {
+          const inputId = document.createElement('input');
+          inputId.type = 'hidden';
+          inputId.name = `attendances[${idx}][siswa_ekstrakurikuler_id]`;
+          inputId.value = seId;
+          container.appendChild(inputId);
+
+          const inputStatus = document.createElement('input');
+          inputStatus.type = 'hidden';
+          inputStatus.name = `attendances[${idx}][status]`;
+          inputStatus.value = val.status;
+          container.appendChild(inputStatus);
+
+          const inputNote = document.createElement('input');
+          inputNote.type = 'hidden';
+          inputNote.name = `attendances[${idx}][note]`;
+          inputNote.value = val.note || '';
+          container.appendChild(inputNote);
+
+          idx++;
+        }
+      }
+    });
+  }
 </script>
 @endsection

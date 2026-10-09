@@ -579,6 +579,7 @@ class ExcelController extends Controller
     {
         $request->validate([
             'excel' => 'required|file|mimes:xlsx,xls',
+            'mode'  => 'nullable|in:tambah,timpa',
         ]);
 
         $intrakurikuler = Intrakurikuler::findOrFail($intrakurikuler_id);
@@ -600,6 +601,10 @@ class ExcelController extends Controller
 
         DB::beginTransaction();
         try {
+            if ($request->input('mode') === 'timpa') {
+                LingkupMateri::where('intrakurikuler_id', $intrakurikuler_id)->delete();
+                TujuanPembelajaran::where('intrakurikuler_id', $intrakurikuler_id)->delete();
+            }
             $lmCount = 0;
             $tpCount = 0;
 

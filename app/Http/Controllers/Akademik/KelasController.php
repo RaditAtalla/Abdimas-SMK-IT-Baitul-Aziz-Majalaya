@@ -19,7 +19,7 @@ class KelasController extends Controller
             ->select('kelas_ajar.*')
             ->with(['kelas', 'tahunAjaran', 'waliKelas'])
             ->withCount('riwayatKelas')
-            ->orderBy('tahun_ajaran.tahun', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         return view('akademik.kelas.index', compact('kelasAjar'));

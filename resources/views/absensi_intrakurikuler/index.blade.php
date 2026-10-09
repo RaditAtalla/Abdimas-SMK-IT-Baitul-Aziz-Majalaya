@@ -25,6 +25,9 @@
           </div>
 
           <div class="d-flex gap-2">
+            <button type="submit" form="absensiForm" class="btn btn-primary">
+              <i class="bi bi-save me-1"></i> Simpan Absensi
+            </button>
             <a href="{{ route('absensi.intrakurikuler.rekap', $intrakurikuler->intrakurikuler_id) }}"
               class="btn btn-outline-secondary">
               Rekap Absensi
@@ -60,66 +63,109 @@
         <div class="alert alert-warning">{{ session('warning') }}</div>
         @endif
 
-        <div class="table-responsive">
-          <table class="table table-hover" id="pc-dt-simple">
-            <thead>
-              <tr>
-                <th>Nama</th>
-                <th>Status</th>
-                <th>Keterangan</th>
-                <th class="text-end">Aksi</th>
-              </tr>
-            </thead>
+        <form id="absensiForm" method="POST" action="{{ route('absensi.intrakurikuler.harian.store', $intrakurikuler->intrakurikuler_id) }}">
+          @csrf
+          <div id="hiddenInputsContainer"></div>
 
-            <tbody>
-              @foreach ($students as $s)
-              @php
-                $att = $attendanceMap->get($s['riwayat_kelas_id']);
-              @endphp
+          <div class="table-responsive">
+            <table class="table table-hover" id="pc-dt-simple">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Nama</th>
+                  <th style="width: 15%;">Status</th>
+                  <th style="width: 25%;">Absensi</th>
+                  <th style="width: 35%;">Keterangan</th>
+                </tr>
+              </thead>
 
-              <tr>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                      <img src="{{ $s['avatar'] }}" alt="user" class="img-radius wid-40" />
+              <tbody>
+                @foreach ($students as $s)
+                @php
+                  $att = $attendanceMap->get($s['riwayat_kelas_id']);
+                  $currentStatus = $att?->status ?? '';
+                  $currentNote = $att?->note ?? '';
+                @endphp
+
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="flex-shrink-0">
+                        <img src="{{ $s['avatar'] }}" alt="user" class="img-radius wid-40" />
+                      </div>
+                      <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-0">{{ $s['name'] }}</h6>
+                        <small class="text-muted">{{ $intrakurikuler->kelasAjar?->kelas?->nama_kelas ?? '-' }}</small>
+                      </div>
                     </div>
-                    <div class="flex-grow-1 ms-3">
-                      <h6 class="mb-0">{{ $s['name'] }}</h6>
-                      <small class="text-muted">{{ $intrakurikuler->kelasAjar?->kelas?->nama_kelas ?? '-' }}</small>
+                  </td>
+
+                  <td>
+                    @if($att)
+                      @php
+                        $badgeClass = match($att->status) {
+                            'hadir' => 'bg-light-success text-success',
+                            'alpha' => 'bg-light-danger text-danger',
+                            'sakit' => 'bg-light-warning text-warning',
+                            'izin'  => 'bg-light-info text-info',
+                            default => 'bg-light-primary text-primary',
+                        };
+                      @endphp
+                      <span class="badge {{ $badgeClass }} text-capitalize">{{ $att->status }}</span>
+                    @else
+                      <span class="badge bg-light-secondary">Belum</span>
+                    @endif
+                  </td>
+
+                  <td>
+                    <div class="d-flex gap-2">
+                      <div class="form-check">
+                        <input class="form-check-input absensi-radio" type="radio"
+                          name="status_{{ $s['riwayat_kelas_id'] }}"
+                          id="status_hadir_{{ $s['riwayat_kelas_id'] }}"
+                          data-rk-id="{{ $s['riwayat_kelas_id'] }}"
+                          value="hadir" {{ $currentStatus === 'hadir' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="status_hadir_{{ $s['riwayat_kelas_id'] }}">Hadir</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input absensi-radio" type="radio"
+                          name="status_{{ $s['riwayat_kelas_id'] }}"
+                          id="status_alpha_{{ $s['riwayat_kelas_id'] }}"
+                          data-rk-id="{{ $s['riwayat_kelas_id'] }}"
+                          value="alpha" {{ $currentStatus === 'alpha' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="status_alpha_{{ $s['riwayat_kelas_id'] }}">Alpha</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input absensi-radio" type="radio"
+                          name="status_{{ $s['riwayat_kelas_id'] }}"
+                          id="status_sakit_{{ $s['riwayat_kelas_id'] }}"
+                          data-rk-id="{{ $s['riwayat_kelas_id'] }}"
+                          value="sakit" {{ $currentStatus === 'sakit' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="status_sakit_{{ $s['riwayat_kelas_id'] }}">Sakit</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input absensi-radio" type="radio"
+                          name="status_{{ $s['riwayat_kelas_id'] }}"
+                          id="status_izin_{{ $s['riwayat_kelas_id'] }}"
+                          data-rk-id="{{ $s['riwayat_kelas_id'] }}"
+                          value="izin" {{ $currentStatus === 'izin' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="status_izin_{{ $s['riwayat_kelas_id'] }}">Izin</label>
+                      </div>
                     </div>
-                  </div>
-                </td>
+                  </td>
 
-                <td>
-                  @if($att)
-                    <span class="badge bg-light-primary text-capitalize">{{ $att->status }}</span>
-                  @else
-                    <span class="badge bg-light-secondary">Belum</span>
-                  @endif
-                </td>
+                  <td>
+                    <input type="text" class="form-control form-control-sm absensi-note"
+                      data-rk-id="{{ $s['riwayat_kelas_id'] }}"
+                      value="{{ $currentNote }}"
+                      placeholder="Keterangan (opsional)...">
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
 
-                <td><span class="text-muted">{{ $att?->note ?: '-' }}</span></td>
-
-                <td class="text-end">
-                  <button
-                    type="button"
-                    class="btn {{ $att ? 'btn-outline-primary' : 'btn-primary' }} btn-sm"
-                    data-bs-toggle="modal"
-                    data-bs-target="#absenModal"
-                    data-mode="{{ $att ? 'edit' : 'create' }}"
-                    data-riwayat-kelas-id="{{ $s['riwayat_kelas_id'] }}"
-                    data-student-name="{{ $s['name'] }}"
-                    data-status="{{ $att?->status ?? '' }}"
-                    data-note="{{ $att?->note ?? '' }}">
-                    {{ $att ? 'Edit' : 'Absensi' }}
-                  </button>
-                </td>
-              </tr>
-              @endforeach
-            </tbody>
-
-          </table>
-        </div>
+            </table>
+          </div>
+        </form>
 
         <div class="mt-3 ps-2">
           <a href="{{ route('absensi.intrakurikuler.list') }}" class="btn btn-light-secondary px-3">
@@ -128,55 +174,6 @@
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
-
-{{-- MODAL --}}
-<div class="modal fade" id="absenModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <form method="POST" action="{{ route('absensi.intrakurikuler.harian.store', $intrakurikuler->intrakurikuler_id) }}">
-        @csrf
-
-        <div class="modal-header">
-          <h5 class="modal-title" id="absenModalTitle">Absensi</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <input type="hidden" name="tanggal" id="mTanggal">
-          <input type="hidden" name="riwayat_kelas_id" id="mRiwayatKelasId">
-
-          <div class="mb-2">
-            <label class="form-label mb-1">Siswa</label>
-            <input type="text" class="form-control" id="mStudentName" readonly>
-          </div>
-
-          <div class="mb-2">
-            <label class="form-label mb-1">Status</label>
-            <select class="form-select" name="status" id="mStatus" required>
-              <option value="">Pilih status</option>
-              <option value="hadir">Hadir</option>
-              <option value="alpha">Alpha</option>
-              <option value="sakit">Sakit</option>
-              <option value="izin">Izin</option>
-            </select>
-          </div>
-
-          <div class="mb-0 d-none" id="noteWrapper">
-            <label class="form-label mb-1">Keterangan</label>
-            <textarea class="form-control" name="note" id="mNote" rows="2"
-              placeholder="Contoh: demam / izin keluarga / dsb"></textarea>
-            <small class="text-muted">Wajib diisi untuk status Izin / Sakit.</small>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="submit" class="btn btn-primary" id="mSubmitBtn">Simpan</button>
-        </div>
-      </form>
     </div>
   </div>
 </div>
@@ -213,7 +210,6 @@
       if (!selectedDates.length) return;
       const dateStr = fp.formatDate(selectedDates[0], 'Y-m-d');
 
-      // kalau sama dengan query saat ini, jangan reload
       const cur = new URLSearchParams(window.location.search).get('date') || '';
       if (dateStr === cur) return;
 
@@ -226,61 +222,161 @@
     fp.setDate(dateSelected.value, false);
   }
 
-  // ====== MODAL ======
-  const absenModalEl = document.getElementById('absenModal');
+  // ====== ATTENDANCE STATE MANAGEMENT ACROSS PAGINATION ======
+  const attendanceState = {};
 
-  const title = document.getElementById('absenModalTitle');
-  const mTanggal = document.getElementById('mTanggal');
-  const mRiwayatKelasId = document.getElementById('mRiwayatKelasId');
-  const mStudentName = document.getElementById('mStudentName');
-  const mStatus = document.getElementById('mStatus');
-  const mNote = document.getElementById('mNote');
-  const noteWrapper = document.getElementById('noteWrapper');
-  const btnSubmit = document.getElementById('mSubmitBtn');
+  // Initialize attendanceState from initial PHP render (keyed strictly by student riwayat_kelas_id as String)
+  @foreach ($students as $s)
+    @php $att = $attendanceMap->get($s['riwayat_kelas_id']); @endphp
+    attendanceState[String("{{ $s['riwayat_kelas_id'] }}")] = {
+      status: {!! json_encode($att?->status ?? '') !!},
+      note: {!! json_encode($att?->note ?? '') !!}
+    };
+  @endforeach
 
-  function toggleNote(status) {
-    const need = (status === 'izin' || status === 'sakit');
-    if (need) {
-      noteWrapper.classList.remove('d-none');
-      mNote.required = true;
-    } else {
-      noteWrapper.classList.add('d-none');
-      mNote.required = false;
-      mNote.value = '';
-    }
+  function restoreCurrentPageInputs() {
+    // Restore Radio Buttons for visible rows on the active page
+    document.querySelectorAll('.absensi-radio').forEach(radio => {
+      const rkId = String(radio.getAttribute('data-rk-id') || '');
+      if (!rkId || !attendanceState[rkId]) return;
+
+      const savedStatus = attendanceState[rkId].status || '';
+      if (savedStatus) {
+        radio.checked = (radio.value === savedStatus);
+      } else {
+        radio.checked = false;
+      }
+    });
+
+    // Restore Note Inputs for visible rows on the active page
+    document.querySelectorAll('.absensi-note').forEach(input => {
+      const rkId = String(input.getAttribute('data-rk-id') || '');
+      if (!rkId || !attendanceState[rkId]) return;
+
+      const savedNote = attendanceState[rkId].note !== undefined ? attendanceState[rkId].note : '';
+      input.value = savedNote;
+    });
   }
 
-  mStatus.addEventListener('change', () => toggleNote(mStatus.value));
+  // Listen to user changes (using closest for reliable capture)
+  document.addEventListener('change', function(e) {
+    const radio = e.target.closest('.absensi-radio');
+    if (!radio) return;
 
-  absenModalEl.addEventListener('show.bs.modal', function(event) {
-    const btn = event.relatedTarget;
-    if (!btn) return;
+    const rkId = String(radio.getAttribute('data-rk-id') || '');
+    if (!rkId) return;
 
-    const mode = btn.getAttribute('data-mode') || 'create';
-    const rkId = btn.getAttribute('data-riwayat-kelas-id') || '';
-    const studentName = btn.getAttribute('data-student-name') || '';
-    const status = btn.getAttribute('data-status') || '';
-    const note = btn.getAttribute('data-note') || '';
+    if (!attendanceState[rkId]) {
+      attendanceState[rkId] = { status: '', note: '' };
+    }
+    attendanceState[rkId].status = radio.value;
+  });
 
-    // tanggal selalu ambil dari picker/hidden (paling update)
-    const date = dateSelected.value || '';
+  document.addEventListener('input', function(e) {
+    const input = e.target.closest('.absensi-note');
+    if (!input) return;
 
-    mTanggal.value = date;
-    mRiwayatKelasId.value = rkId;
+    const rkId = String(input.getAttribute('data-rk-id') || '');
+    if (!rkId) return;
 
-    mStudentName.value = studentName;
-    mStatus.value = status;
-    mNote.value = note;
+    if (!attendanceState[rkId]) {
+      attendanceState[rkId] = { status: '', note: '' };
+    }
+    attendanceState[rkId].note = input.value;
+  });
 
-    toggleNote(status);
+  // Schedule restoration asynchronously so Simple-DataTables has completely finished rendering the new DOM page
+  function triggerRestoration() {
+    setTimeout(restoreCurrentPageInputs, 0);
+    setTimeout(restoreCurrentPageInputs, 50);
+  }
 
-    if (mode === 'edit') {
-      title.textContent = 'Edit Absensi';
-      btnSubmit.textContent = 'Update';
-    } else {
-      title.textContent = 'Input Absensi';
-      btnSubmit.textContent = 'Simpan';
+  // 1. Observe DOM mutations in tbody
+  const tbody = document.querySelector('#pc-dt-simple tbody');
+  if (tbody) {
+    const observer = new MutationObserver(function() {
+      triggerRestoration();
+    });
+    observer.observe(tbody, { childList: true, subtree: true });
+  }
+
+  // 2. Listen to clicks on pagination & headers (sorting)
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.datatable-pagination') || e.target.closest('.datatable-selector') || e.target.closest('#pc-dt-simple thead')) {
+      triggerRestoration();
     }
   });
+
+  // 3. Attach directly to DataTable instance events if available
+  function attachDtListeners() {
+    if (window.dt) {
+      window.dt.on('datatable.page', triggerRestoration);
+      window.dt.on('datatable.sort', triggerRestoration);
+      window.dt.on('datatable.search', triggerRestoration);
+      window.dt.on('datatable.perpage', triggerRestoration);
+    } else {
+      setTimeout(attachDtListeners, 100);
+    }
+  }
+  attachDtListeners();
+
+  // Initial trigger
+  triggerRestoration();
+
+  // ====== FORM SUBMISSION ======
+  const absensiForm = document.getElementById('absensiForm');
+  if (absensiForm) {
+    absensiForm.addEventListener('submit', function(e) {
+      // Sync currently visible inputs before submit
+      document.querySelectorAll('.absensi-radio:checked').forEach(radio => {
+        const rkId = String(radio.getAttribute('data-rk-id') || '');
+        if (rkId) {
+          if (!attendanceState[rkId]) attendanceState[rkId] = {};
+          attendanceState[rkId].status = radio.value;
+        }
+      });
+      document.querySelectorAll('.absensi-note').forEach(input => {
+        const rkId = String(input.getAttribute('data-rk-id') || '');
+        if (rkId) {
+          if (!attendanceState[rkId]) attendanceState[rkId] = {};
+          attendanceState[rkId].note = input.value;
+        }
+      });
+
+      const container = document.getElementById('hiddenInputsContainer');
+      container.innerHTML = '';
+
+      const hiddenDate = document.createElement('input');
+      hiddenDate.type = 'hidden';
+      hiddenDate.name = 'tanggal';
+      hiddenDate.value = dateSelected.value || '{{ $selectedDate }}';
+      container.appendChild(hiddenDate);
+
+      let idx = 0;
+      for (const [rkId, val] of Object.entries(attendanceState)) {
+        if (val && val.status) {
+          const inputRk = document.createElement('input');
+          inputRk.type = 'hidden';
+          inputRk.name = `attendances[${idx}][riwayat_kelas_id]`;
+          inputRk.value = rkId;
+          container.appendChild(inputRk);
+
+          const inputStatus = document.createElement('input');
+          inputStatus.type = 'hidden';
+          inputStatus.name = `attendances[${idx}][status]`;
+          inputStatus.value = val.status;
+          container.appendChild(inputStatus);
+
+          const inputNote = document.createElement('input');
+          inputNote.type = 'hidden';
+          inputNote.name = `attendances[${idx}][note]`;
+          inputNote.value = val.note || '';
+          container.appendChild(inputNote);
+
+          idx++;
+        }
+      }
+    });
+  }
 </script>
 @endsection

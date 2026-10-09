@@ -75,6 +75,69 @@ class AbsensiControllerEkstrakurikuler extends Controller
     {
         $maxBackDays = Auth::user()->hasRole('Bagian Akademik') ? 30 : 7;
 
+        if ($request->has('attendances') && is_array($request->input('attendances'))) {
+            $data = $request->validate([
+                'tanggal' => [
+                    'required',
+                    'date',
+                    'before_or_equal:today',
+                    'after_or_equal:' . now()->subDays($maxBackDays)->toDateString(),
+                ],
+                'attendances' => ['required', 'array'],
+                'attendances.*.siswa_ekstrakurikuler_id' => ['required', 'integer'],
+                'attendances.*.status' => ['required', Rule::in(['hadir', 'alpha', 'sakit', 'izin'])],
+                'attendances.*.note' => ['nullable', 'string'],
+            ]);
+
+            foreach ($data['attendances'] as $att) {
+                if (in_array($att['status'], ['izin', 'sakit'], true) && blank($att['note'] ?? null)) {
+                    return back()->with('warning', 'Keterangan wajib diisi untuk status Izin / Sakit. Mohon periksa kembali inputan Anda.');
+                }
+            }
+
+            $validIds = SiswaEkstrakurikuler::query()
+                ->where('ekstrakurikuler_id', $ekstrakurikuler->ekstrakurikuler_id)
+                ->pluck('siswa_ekstrakurikuler_id')
+                ->toArray();
+
+            $dateFormatted = Carbon::parse($data['tanggal'])->format('Y-m-d');
+
+            DB::beginTransaction();
+            try {
+                $savedCount = 0;
+                foreach ($data['attendances'] as $att) {
+                    if (!in_array($att['siswa_ekstrakurikuler_id'], $validIds)) {
+                        continue;
+                    }
+
+                    $where = [
+                        'ekstrakurikuler_id'       => $ekstrakurikuler->ekstrakurikuler_id,
+                        'siswa_ekstrakurikuler_id' => $att['siswa_ekstrakurikuler_id'],
+                        'tanggal'                  => $dateFormatted,
+                    ];
+
+                    $values = [
+                        'status'     => $att['status'],
+                        'note'       => $att['note'] ?? null,
+                        'updated_by' => Auth::id(),
+                    ];
+
+                    KehadiranEkstrakurikuler::query()->updateOrCreate(
+                        $where,
+                        $values + ['created_by' => Auth::id()]
+                    );
+                    $savedCount++;
+                }
+
+                DB::commit();
+                return back()->with('success', "Absensi ekstrakurikuler tersimpan ($savedCount siswa).");
+            } catch (\Throwable $th) {
+                DB::rollBack();
+                return back()->with('error', 'Gagal menyimpan absensi ekstrakurikuler: ' . $th->getMessage());
+            }
+        }
+
+        // Single fallback
         $data = $request->validate([
             'tanggal' => [
                 'required',
