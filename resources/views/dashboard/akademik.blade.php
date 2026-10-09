@@ -1,9 +1,9 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Dashboard Akademik')
 
 @section('content')
-    <x-breadcrumb item="Dashboard" active="Akademik" />
+    <x-breadcrumb item="Beranda" active="Akademik" />
 
     <div class="card mb-4">
         <div class="card-body">

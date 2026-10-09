@@ -1,10 +1,10 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Finance')
 
 @section('content')
 
-    <x-breadcrumb item="Dashboard" active="Finance" />
+    <x-breadcrumb item="Beranda" active="Finance" />
     <!-- [ Main Content ] start -->
     <div class="row">
         <div class="col-md-5 col-xxl-4">
@@ -617,7 +617,7 @@
                                     <th>Date/Time</th>
                                     <th>Amount</th>
                                     <th>Status</th>
-                                    <th class="text-end">Action</th>
+                                    <th class="text-end">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>

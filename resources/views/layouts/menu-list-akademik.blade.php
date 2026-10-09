@@ -4,7 +4,7 @@
 <li class="pc-item pc-hasmenu">
     <a href="{{ route('dashboard.akademik') }}" class="pc-link">
         <span class="pc-micon"><i class="bi bi-columns-gap"></i></span>
-        <span class="pc-mtext">Dashboard</span>
+        <span class="pc-mtext">Beranda</span>
     </a>
 </li>
 <li class="pc-item pc-hasmenu">
@@ -15,7 +15,7 @@
 </li>
 
 <li class="pc-item pc-caption">
-    <label>Manajement Account</label>
+    <label>Manajemen Akun</label>
     <svg class="pc-icon">
         <use xlink:href="#custom-flag"></use>
     </svg>
@@ -46,11 +46,11 @@
         <span class="pc-micon">
             <i class="bi bi-person-check"></i>
         </span>
-        <span class="pc-mtext">Account activate</span></a>
+        <span class="pc-mtext">Aktivasi Akun</span></a>
 </li>
 
 <li class="pc-item pc-caption">
-    <label>Manajement kelas</label>
+    <label>Manajemen Kelas</label>
     <svg class="pc-icon">
         <use xlink:href="#custom-flag"></use>
     </svg>
@@ -67,10 +67,10 @@
         <span class="pc-micon">
             <i class="bi bi-mortarboard"></i>
         </span>
-        <span class="pc-mtext">List kelas</span></a>
+        <span class="pc-mtext">Daftar Kelas</span></a>
 </li>
 <li class="pc-item pc-caption">
-    <label>Manajement Mapel</label>
+    <label>Manajemen Mapel</label>
     <svg class="pc-icon">
         <use xlink:href="#custom-flag"></use>
     </svg>
@@ -112,7 +112,7 @@
 </li>
 
 <li class="pc-item pc-caption">
-    <label>Cetak dokument</label>
+    <label>Cetak Dokumen</label>
     <svg class="pc-icon">
         <use xlink:href="#custom-flag"></use>
     </svg>

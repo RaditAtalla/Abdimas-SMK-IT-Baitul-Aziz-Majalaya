@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Manage Siswa Ekstrakurikuler')
 
@@ -54,7 +54,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Ekstrakurikuler" subItem="Ekstrakurikuler" subLink="{{ route('ekstrakurikuler.index') }}" active="Manage Siswa" />
+    <x-breadcrumb item="Ekstrakurikuler" subItem="Ekstrakurikuler" subLink="{{ route('ekstrakurikuler.index') }}" active="Kelola Siswa" />
 
     <div class="card">
         <div class="card-header d-flex justify-content-between">
@@ -88,7 +88,7 @@
                                 <th>Nama Siswa</th>
                                 <th>NIS</th>
                                 <th>Kelas Terakhir</th>
-                                <th>Action</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>

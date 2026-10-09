@@ -1,4 +1,4 @@
-<div class="auth-sidefooter">
+﻿<div class="auth-sidefooter">
   <img src="/build/images/logo-dark.svg" class="img-brand img-fluid" alt="images" />
   <hr class="mb-3 mt-4" />
   <div class="row">
@@ -7,7 +7,7 @@
     </div>
     <div class="col-auto my-1">
       <ul class="list-inline footer-link mb-0">
-        <li class="list-inline-item"><a href="/index">Home</a></li>
+        <li class="list-inline-item"><a href="/index">Beranda</a></li>
         <li class="list-inline-item"><a href="https://phoenixcoded.gitbook.io/able-pro/" target="_blank">Documentation</a></li>
         <li class="list-inline-item"><a href="https://phoenixcoded.support-hub.io/" target="_blank">Support</a></li>
       </ul>

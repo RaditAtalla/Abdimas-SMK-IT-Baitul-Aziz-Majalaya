@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Manajemen Guru')
 
@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Manajemen Staff" active="Manajemen Staff" />
+    <x-breadcrumb item="Manajemen Staf" active="Manajemen Staf" />
 
     <div class="row">
         <div class="col-xl-12">
@@ -38,7 +38,7 @@
                                     <th>Nama</th>
                                     <th>Username</th>
                                     <th>Role</th>
-                                    <th>Action</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>

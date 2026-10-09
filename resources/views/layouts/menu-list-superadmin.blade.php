@@ -4,13 +4,13 @@
                 <li class="pc-item pc-hasmenu">
                   <a href="{{ route('dashboard') }}" class="pc-link">
                     <span class="pc-micon"><i class="bi bi-columns-gap"></i></span>
-                    <span class="pc-mtext">Dashboard</span>
+                    <span class="pc-mtext">Beranda</span>
                   </a>
                 </li>
 
 
                 <li class="pc-item pc-caption">
-                  <label>Manajement user</label>
+                  <label>Manajemen Pengguna</label>
                   <svg class="pc-icon">
                     <use xlink:href="#custom-flag"></use>
                   </svg>

@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Manajemen Kelas Ajar')
 
@@ -86,8 +86,8 @@
                                     <th>Wali Kelas</th>
                                     <th>KKM</th>
                                     <th>Jumlah Siswa</th>
-                                    <th>Manage Siswa</th>
-                                    <th>Action</th>
+                                    <th>Kelola Siswa</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>

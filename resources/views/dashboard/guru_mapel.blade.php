@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Dashboard Guru')
 
@@ -17,7 +17,7 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Dashboard" active="Guru" />
+    <x-breadcrumb item="Beranda" active="Guru" />
 
     <div class="row">
         {{-- FILTER BAR --}}

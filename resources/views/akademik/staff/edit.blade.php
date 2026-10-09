@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Edit Staff')
 
@@ -7,13 +7,13 @@
 @endsection
 
 @section('content')
-    <x-breadcrumb item="Manajemen Staff" link="{{ route('akademik.staff.index') }}" active="Edit Staff" />
+    <x-breadcrumb item="Manajemen Staf" link="{{ route('akademik.staff.index') }}" active="Edit Staf" />
 
     <div class="container">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h5>Edit Staff</h5>
+                    <h5>Edit Staf</h5>
                     <span class="d-block m-t-5">Edit data akun Guru Mapel atau Wali Kelas</span>
                 </div>
                 <div class="card-body">

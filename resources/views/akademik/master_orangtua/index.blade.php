@@ -1,9 +1,9 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Manajemen Data Orang Tua')
 
 @section('content')
-    <x-breadcrumb item="Manajemen Account" active="Data Orang Tua" />
+    <x-breadcrumb item="Manajemen Akun" active="Data Orang Tua" />
 
     <div class="row">
         <div class="col-xl-12">
@@ -38,7 +38,7 @@
                                     <th>Pekerjaan Ayah</th>
                                     <th>Pekerjaan Ibu</th>
                                     <th>Domisili</th>
-                                    <th>Action</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
 

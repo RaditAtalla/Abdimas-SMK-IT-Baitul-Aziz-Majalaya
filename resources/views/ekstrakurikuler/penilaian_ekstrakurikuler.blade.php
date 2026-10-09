@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Penilaian Ekstrakurikuler')
 
@@ -46,7 +46,7 @@
                                     <th>Siswa</th>
                                     {{-- <th data-type="date" data-format="YYYY/DD/MM">Start Date</th> --}}
                                     <th>Deskripsi Penilaian</th>
-                                    <th>Action</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('title', 'Tahun Ajaran')
 
@@ -36,7 +36,7 @@
                                 <th>No</th>
                                 <th>Tahun</th>
                                 <th>Semester</th>
-                                <th>Action</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
